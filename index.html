@@ -1091,6 +1091,7 @@ const keysOf = t => store.get(`keys:${t.id}`, 0);
 const seen = (t, gi) => store.get(`seen:${t.id}:${gi}`, false);
 const openCount = t => t.groups.filter((_, gi) => isOpen(t, gi)).length;
 const allGroupsOpen = t => openCount(t) === t.groups.length;
+const lockedCount = t => t.groups.length - openCount(t);
 const keyedCount = t => t.groups.filter((_, gi) => isKeyed(t, gi)).length;
 const topicComplete = t => keyedCount(t) === t.groups.length;
 const unlockedWords = t => t.groups.flatMap((g, gi) => isOpen(t, gi) ? g.words : []);
@@ -1123,7 +1124,7 @@ function recordDiff(w, ok) {
 // ============ ESTADO ============
 // scope: 'topic' (todas as palavras desbloqueadas) ou o índice de um grupo; no misturado é sempre 'topic'
 const state = { screen: 'home', topicId: null, scope: 'topic', mode: null, questions: [], i: 0, total: Infinity, queue: null, prev: null,
-  gained: 0, gainedBy: {}, missed: 0, hints: 0, round: null, showWords: false, intro: null, keyEarned: false };
+  gained: 0, gainedBy: {}, missed: 0, hints: 0, round: null, showWords: false, intro: null, keyEarned: false, groupDone: false };
 const topicById = id => id === 'mix' ? MIX : TOPICS.find(t => t.id === id);
 const curTopic = () => topicById(state.topicId);
 const inGroup = () => state.topicId !== 'mix' && state.scope !== 'topic';
@@ -1202,6 +1203,7 @@ function beginRound(mode, retryWords) {
   state.hints = 0;
   state.round = null;
   state.keyEarned = false;
+  state.groupDone = false;
   state.questions = [makeQuestion(pickWord(), mode)];
   state.i = 0;
   state.screen = 'quiz';
@@ -1219,6 +1221,7 @@ function answer(q, ok, picked, note) {
   } else state.missed++;
   // Sequência do grupo: acerto sem pista soma, erro põe a zero, pista não conta para nenhum lado
   // Ao chegar a 15 num grupo que ainda não deu chave: ganha-se uma chave (e a sequência continua a contar para a melhor)
+  // Se já não há grupos fechados por abrir (ou as chaves guardadas já chegam para eles), o grupo fica completo mas sem chave
   if (inGroup()) {
     const t = curTopic(), gi = state.scope;
     if (!ok) setStreak(t, gi, 0);
@@ -1227,15 +1230,21 @@ function answer(q, ok, picked, note) {
       setStreak(t, gi, n);
       if (n >= STREAK_GOAL && !isKeyed(t, gi)) {
         store.set(`keyed:${t.id}:${gi}`, true);
-        store.set(`keys:${t.id}`, keysOf(t) + 1);
-        state.keyEarned = true;
-        q.keyNow = true;                    // dispara a animação da chave a cair
+        if (lockedCount(t) > keysOf(t)) {
+          store.set(`keys:${t.id}`, keysOf(t) + 1);
+          state.keyEarned = true;
+          q.keyNow = true;                  // dispara a animação da chave a cair
+        } else {
+          state.groupDone = true;
+          q.doneNow = true;
+        }
       }
     }
   }
   sfx(ok ? 'ok' : 'bad');
   render();
   if (q.keyNow) { sfx('levelup'); animateKey(); }
+  else if (q.doneNow) sfx('levelup');
   if (!settings.autoSpeak) return;
   // B com opções: ouve-se a opção escolhida e, se errou, a certa a seguir; nos outros casos, a palavra certa
   if (q.mode === 'B' && !q.typing && !ok) speak(q.options[picked].nl, false, () => speak(q.w.nl));
@@ -1326,7 +1335,7 @@ function next() {
 function endRound() {
   if (state.screen !== 'quiz') return;
   stopSpeaking();
-  state.round = { keyEarned: state.keyEarned };
+  state.round = { keyEarned: state.keyEarned, groupDone: state.groupDone };
   state.screen = 'result';
   render();
 }
@@ -1625,6 +1634,7 @@ function renderResult() {
       <p class="gain">${Object.entries(state.gainedBy).map(([k, n]) => `+${n} ${iconOf(k)}`).join(', ') || '+0'}${state.hints ? `, ${state.hints} pista${state.hints > 1 ? 's' : ''}` : ''}</p>
       ${streakLine}
       ${r.keyEarned ? `<div class="levelup">${KEY} Ganhaste uma chave! Usa-a no tópico para abrir um grupo novo.</div>${confetti()}` : ''}
+      ${r.groupDone ? `<div class="levelup">${topicComplete(t) ? `🎉 Tópico completo! Todos os grupos de ${esc(t.pt)} estão feitos.` : '🎉 Grupo completo! Já não há grupos fechados para abrir, por isso não há chave.'}</div>${confetti()}` : ''}
       ${t.id === 'mix' ? '' : `<div class="result-xp">${progressBar(t)}</div>`}
       <div class="actions">
         ${wrong.length ? `<button class="primary orange" data-act="retry">Repetir os erros (${wrong.length})</button>` : ''}

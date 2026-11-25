@@ -1,6 +1,6 @@
 // Guarda a app no telemóvel para abrir sem internet.
 // Sempre que o index.html mudar, subir a versão (woordjes-v1 -> woordjes-v2) para os telemóveis apanharem a nova.
-const CACHE = 'woordjes-v1';
+const CACHE = 'woordjes-v2';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-512-maskable.png'];
 
 self.addEventListener('install', e => {
