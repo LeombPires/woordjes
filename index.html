@@ -1179,7 +1179,8 @@ function startQuiz(mode, retryWords) {
   state.mode = mode;
   // Primeira vez num grupo: ver, ouvir e copiar as palavras antes da ronda
   if (!retryWords && inGroup() && !seen(curTopic(), state.scope)) {
-    state.intro = { words: curGroup().words, ok: curGroup().words.map(() => false) };
+    // heard: palavras que já tocaram sozinhas (só a primeira vez que se escolhe a caixa)
+    state.intro = { words: curGroup().words, ok: curGroup().words.map(() => false), heard: curGroup().words.map(() => false) };
     state.screen = 'intro';
     render();
     return;
@@ -1705,6 +1706,16 @@ const actions = {
 $app.addEventListener('input', e => {
   if (e.target.classList.contains('intro-input')) checkIntro(e.target);
   if (e.target.classList.contains('copy-input')) checkCopy(e.target);
+});
+
+// Apresentação: a palavra ouve-se sozinha a primeira vez que se escolhe a caixa dela
+$app.addEventListener('focusin', e => {
+  const input = e.target;
+  if (state.screen !== 'intro' || !input.classList.contains('intro-input') || input.readOnly) return;
+  const i = Number(input.dataset.idx);
+  if (state.intro.heard[i]) return;
+  state.intro.heard[i] = true;
+  speak(state.intro.words[i].nl);
 });
 
 $app.addEventListener('click', e => {
