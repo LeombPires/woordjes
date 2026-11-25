@@ -1495,7 +1495,7 @@ function renderIntro() {
       <div class="card intro-card ${it.ok[i] ? 'ok' : ''}">
         <div class="intro-top">${w.img ? `<span class="intro-img">${imgHtml(w.img)}</span>` : ''}
           <div class="intro-words"><div class="intro-nl" lang="nl">${nlHtml(w.nl)}</div><div class="intro-pt">${esc(w.pt)}</div></div>
-          <button class="iconbtn" data-act="speak" data-arg="${esc(w.nl)}" aria-label="Ouvir">🔊</button></div>
+          <button class="iconbtn" data-act="introSpeak" data-arg="${esc(w.nl)}" aria-label="Ouvir">🔊</button></div>
         <div class="typing"><input class="intro-input" data-idx="${i}" lang="nl" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
           placeholder="Copia aqui" ${it.ok[i] ? 'value="' + esc(spoken(w.nl)) + '" readonly' : ''}>
           <span class="check" aria-hidden="true">${it.ok[i] ? '✓' : ''}</span></div>
@@ -1680,6 +1680,11 @@ const actions = {
     render();
   },
   speak(text) { speak(text); },
+  // Na apresentação o 🔊 não pode fechar o teclado: volta a pôr o cursor na caixa onde se estava a escrever
+  introSpeak(text) {
+    speak(text);
+    if (lastIntroInput?.isConnected && !lastIntroInput.readOnly && document.activeElement !== lastIntroInput) lastIntroInput.focus({ preventScroll: true });
+  },
   speakSlow(text) { speak(text, true); },
   start(mode) { startQuiz(mode); speakIfListening(); },
   choose(idx) {
@@ -1709,13 +1714,20 @@ $app.addEventListener('input', e => {
 });
 
 // Apresentação: a palavra ouve-se sozinha a primeira vez que se escolhe a caixa dela
+let lastIntroInput = null;
 $app.addEventListener('focusin', e => {
   const input = e.target;
   if (state.screen !== 'intro' || !input.classList.contains('intro-input') || input.readOnly) return;
+  lastIntroInput = input;
   const i = Number(input.dataset.idx);
   if (state.intro.heard[i]) return;
   state.intro.heard[i] = true;
   speak(state.intro.words[i].nl);
+});
+
+// Carregar no 🔊 da apresentação não tira o cursor da caixa (senão o teclado do telemóvel desaparece)
+$app.addEventListener('mousedown', e => {
+  if (state.screen === 'intro' && e.target.closest('[data-act="introSpeak"]')) e.preventDefault();
 });
 
 $app.addEventListener('click', e => {
