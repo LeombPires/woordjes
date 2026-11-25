@@ -1,0 +1,1740 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1F4AA8" media="(prefers-color-scheme: light)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Woordjes">
+<meta name="theme-color" content="#0F1524" media="(prefers-color-scheme: dark)">
+<title>Woordjes · vocabulário de neerlandês</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ===== Tokens =====
+     Duas cores apenas: azul de Delft (estrutura, de) e laranja (destaque, het).
+     Tudo o resto são neutros. */
+  :root {
+    --bg: #F4F6FA;
+    --surface: #FFFFFF;
+    --ink: #17213A;
+    --muted: #6A7490;
+    --line: #DCE2EE;
+    --line-strong: #C3CCDE;
+    --primary: #1F4AA8;
+    --primary-ink: #FFFFFF;
+    --primary-soft: #E6ECF8;
+    --accent: #D9601A;
+    --accent-soft: #FBEADF;
+    --ok: #2E7D5B;
+    --ok-soft: #E2F3EA;
+    --bad: #B3402F;
+    --bad-soft: #F9E4E0;
+    --de: var(--primary);
+    --het: var(--accent);
+    --display: "Bricolage Grotesque", "Inter", system-ui, sans-serif;
+    --body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --r: 14px;
+    --r-sm: 10px;
+    --shadow: 0 1px 2px rgba(23, 33, 58, .06), 0 6px 18px -8px rgba(23, 33, 58, .12);
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0F1524; --surface: #171F33; --ink: #E9EDF7; --muted: #98A3BF;
+      --line: #263049; --line-strong: #34405E; --primary: #7FA3F2; --primary-ink: #0F1524; --primary-soft: #1D2A4A;
+      --accent: #F0925A; --accent-soft: #3A2716; --ok: #5CC494; --ok-soft: #173627; --bad: #EE8577; --bad-soft: #3D1E1E;
+      --shadow: none;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0F1524; --surface: #171F33; --ink: #E9EDF7; --muted: #98A3BF;
+    --line: #263049; --line-strong: #34405E; --primary: #7FA3F2; --primary-ink: #0F1524; --primary-soft: #1D2A4A;
+    --accent: #F0925A; --accent-soft: #3A2716; --ok: #5CC494; --ok-soft: #173627; --bad: #EE8577; --bad-soft: #3D1E1E;
+    --shadow: none;
+  }
+
+  *, *::before, *::after { box-sizing: inherit; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--body); font-size: 16px; line-height: 1.5;
+    -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  h1, h2, .prompt-word, .score, .letter, .tile .pt, .big-play, .art-choice { font-family: var(--display); }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+  #app { max-width: 720px; margin: 0 auto; padding: 16px 16px 48px; }
+
+  /* Ecrã de arranque */
+  #splash { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: grid; place-content: center; text-align: center; gap: 8px; transition: opacity .45s; }
+  #splash.hide { opacity: 0; pointer-events: none; }
+  #splash .logo { font-size: 3.4rem; line-height: 1; animation: pop .6s cubic-bezier(.2, 1.4, .4, 1); }
+  #splash h1 { margin: 0; font-size: 2.8rem; font-weight: 800; letter-spacing: -0.03em; color: var(--primary); font-family: var(--display); }
+  #splash p { margin: 0; color: var(--muted); }
+
+  /* ===== Peças reutilizadas ===== */
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); }
+  .iconbtn { border: 0; background: transparent; font-size: 1.25rem; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; flex: none; color: var(--muted); }
+  .iconbtn:hover { background: var(--primary-soft); color: var(--ink); }
+  /* Setas de voltar, ✕ e roda dentada: com contorno, para se ver que são botões */
+  .topbar .iconbtn, .gear { border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); width: 40px; height: 40px; }
+  .topbar .iconbtn:hover, .gear:hover { border-color: var(--primary); color: var(--primary); }
+  .primary {
+    border: 0; border-radius: var(--r-sm); background: var(--primary); color: var(--primary-ink);
+    font-weight: 600; padding: 12px 22px; font-size: 1rem; transition: transform .08s, filter .15s;
+  }
+  .primary:hover { filter: brightness(1.06); }
+  .primary:active { transform: scale(.98); }
+  .primary.orange { background: var(--accent); color: #fff; }
+  .soft { border: 1px solid var(--line-strong); background: var(--surface); border-radius: 99px; padding: 7px 14px; font-weight: 500; font-size: .95rem; }
+  .soft:hover { border-color: var(--primary); color: var(--primary); }
+  .linkbtn { border: 0; background: none; color: var(--primary); font-weight: 500; padding: 14px 0; }
+  .linkbtn:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .linkbtn.danger { color: var(--bad); display: block; margin-top: 16px; font-size: .9rem; }
+  .pill { font-size: .75rem; padding: 2px 9px; border-radius: 99px; background: var(--primary-soft); color: var(--primary); font-weight: 600; white-space: nowrap; }
+  .pill.new { background: var(--accent-soft); color: var(--accent); }
+  .pill.hard { background: var(--bad-soft); color: var(--bad); }
+  .note { margin-top: 12px; padding: 12px 14px; border-radius: var(--r-sm); background: var(--primary-soft); font-size: .92rem; color: var(--ink); }
+  .topbar { display: flex; align-items: center; gap: 8px; margin: 0 -8px 12px; }
+  .bar-title { margin: 0; font-size: 1.35rem; font-weight: 700; }
+
+  /* Artigos: de a azul, het a laranja, mesmo peso */
+  .art { font-weight: 700; }
+  .art-de { color: var(--de); }
+  .art-het { color: var(--het); }
+  .nl-hint { color: var(--muted); font-weight: 400; font-size: .72em; }
+  .legend { margin: 8px 0 0; color: var(--muted); font-size: .92rem; }
+
+  /* ===== Início ===== */
+  .brand { position: relative; padding: 8px 52px 4px 0; }
+  .brand h1 { font-size: 2.6rem; font-weight: 800; letter-spacing: -0.03em; margin: 0; color: var(--primary); line-height: 1; }
+  .brand p { margin: 4px 0 0; color: var(--muted); font-size: .95rem; }
+  .gear { position: absolute; right: -8px; top: 6px; }
+  .section-title { font-size: .8rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 28px 0 10px; }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+  .tile {
+    position: relative; min-height: 150px; padding: 16px 12px 14px; text-align: center;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow);
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    transition: transform .12s, border-color .12s;
+  }
+  .tile:hover { border-color: var(--primary); }
+  .tile:active { transform: scale(.98); }
+  .tile .ic { font-size: 2.4rem; line-height: 1.1; }
+  .tile .pt { font-weight: 700; font-size: .98rem; line-height: 1.2; letter-spacing: -0.01em; }
+  .tile .nl { display: none; }
+  .tile .badge-new { position: absolute; top: 10px; right: 10px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+
+  /* Progresso: nível, ⭐ e barra */
+  .xp { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100%; margin-top: auto; }
+  .xp-num { font-size: .8rem; color: var(--muted); display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; font-variant-numeric: tabular-nums; }
+  .xp.done .xp-num { color: var(--accent); font-weight: 600; }
+  .xp-bar { width: 100%; height: 4px; border-radius: 99px; background: var(--primary-soft); overflow: hidden; }
+  .xp-bar > span { display: block; height: 100%; background: var(--primary); border-radius: 99px; }
+
+  /* ===== Tópico ===== */
+  .topic-head { display: flex; align-items: center; gap: 14px; }
+  .topic-head .ic { font-size: 2.8rem; }
+  .topic-head h2 { margin: 0; font-size: 1.7rem; line-height: 1.1; letter-spacing: -0.02em; }
+  .topic-head .nl { color: var(--muted); font-size: .95rem; }
+  .topic-xp { margin-top: 12px; max-width: 320px; }
+  .topic-xp .xp { align-items: flex-start; margin: 0; }
+  .topic-xp .xp-num { justify-content: flex-start; font-size: .9rem; color: var(--ink); }
+  .topic-xp small { display: block; color: var(--muted); font-size: .85rem; margin-top: 6px; }
+  .skills { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  .skills .pill { background: transparent; border: 1px solid var(--line); color: var(--muted); font-weight: 500; }
+
+  /* Copiar a resposta certa depois de errar a escrever */
+  .copy-block { flex-basis: 100%; display: grid; gap: 8px; margin-top: 4px; }
+  .compare { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-weight: 600; }
+  .compare .old { text-decoration: line-through; color: var(--bad); opacity: .8; }
+  .compare .arrow { color: var(--muted); }
+  .compare .new { color: var(--ink); }
+  .copy-input { font: inherit; font-size: 1.05rem; padding: 10px 12px; border-radius: var(--r-sm); border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); width: 100%; }
+  .copied { color: var(--ok); font-weight: 600; }
+  .sub-title { font-size: .8rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 22px 0 8px; }
+  /* O que treinar: azulejos dos grupos */
+  .gtiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .gtile { position: relative; min-height: 96px; padding: 14px 12px 12px; text-align: left; display: flex; flex-direction: column; gap: 3px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); transition: border-color .12s, transform .12s; }
+  .gtile:hover:not(.locked) { border-color: var(--primary); }
+  .gtile:active:not(.locked) { transform: scale(.98); }
+  .g-name { font-weight: 700; font-size: .98rem; line-height: 1.2; padding-right: 44px; }
+  .g-info { color: var(--muted); font-size: .8rem; margin-top: auto; }
+  .g-state { position: absolute; top: 10px; right: 12px; font-weight: 700; color: var(--accent); font-size: .85rem; white-space: nowrap; }
+  .gtile.done .g-state { font-size: 1.1rem; }
+  .gtile.locked { opacity: .55; box-shadow: none; cursor: default; }
+  .gtile.locked .g-state { color: var(--muted); }
+  .gtile.locked.can-open { opacity: 1; border: 1px dashed var(--accent); cursor: pointer; }
+  .g-cta { color: var(--accent); font-weight: 600; font-size: .85rem; }
+  .streak-line { margin-top: 6px; color: var(--accent); font-weight: 600; }
+  .group-words { margin-top: 20px; }
+  .wordlist tr.group-row td { background: var(--bg); color: var(--muted); font-size: .8rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 8px 12px; }
+  .scope.locked { opacity: .6; cursor: default; }
+  .scope.locked.can-open { opacity: 1; border-style: dashed; border-color: var(--accent); }
+  .open-btn { grid-column: 2; grid-row: 1 / span 2; border-color: var(--accent); color: var(--accent); }
+  .keys-note { margin: 0 0 8px; color: var(--accent); font-weight: 600; font-size: .92rem; }
+  .xp-num .keys { color: var(--accent); font-weight: 600; }
+  .count.left { text-align: left; min-width: 0; }
+  .spacer { flex: 1; }
+  .keybadge { color: var(--accent); font-weight: 600; min-width: 0; transition: transform .3s; }
+  .keybadge.pulse { transform: scale(1.35); }
+  .key-fly { position: fixed; left: 50%; top: 42%; z-index: 50; font-size: 2.6rem; line-height: 1; pointer-events: none; filter: drop-shadow(0 6px 10px rgba(0,0,0,.25)); }
+  /* Chama a brilhar quando a sequência atual é o recorde do grupo */
+  @keyframes glow { 0%, 100% { filter: drop-shadow(0 0 2px var(--accent)) brightness(1); } 50% { filter: drop-shadow(0 0 10px var(--accent)) brightness(1.35); } }
+  .flame { display: inline-block; }
+  .flame.glow { animation: glow 1.2s ease-in-out infinite; }
+  .streak { text-align: center; color: var(--accent); font-weight: 600; font-size: .9rem; margin-top: 6px; }
+  .modes { display: grid; gap: 8px; margin-top: 22px; }
+  .mode {
+    display: grid; grid-template-columns: 44px 1fr auto; gap: 14px; align-items: center; text-align: left;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; box-shadow: var(--shadow);
+    transition: border-color .12s;
+  }
+  .mode:has(.mode-main:hover) { border-color: var(--primary); }
+  .mode-main { display: contents; }
+  .mode-main:focus-visible { outline: none; }
+  .mode-main:focus-visible > .letter { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .mode-main > div { text-align: left; }
+  /* Interruptores compactos dentro do cartão */
+  .mode-opts { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; padding-left: 8px; border-left: 1px solid var(--line); }
+  .mode-opt { display: inline-flex; align-items: center; gap: 6px; font-size: 1.05rem; }
+  .mode-opt.locked { opacity: .55; }
+  .mode-opt .lock, .mode .lock { font-size: .95rem; }
+  .switch.small { width: 40px; height: 24px; }
+  .switch.small::after { width: 18px; height: 18px; }
+  .switch.small[aria-checked="true"]::after { transform: translateX(16px); }
+  .mode .letter { width: 44px; height: 44px; border-radius: var(--r-sm); background: var(--primary-soft); display: grid; place-items: center; font-size: 1.4rem; line-height: 1; }
+  .mode .letter .art { font-family: var(--display); font-size: .78rem; display: block; line-height: 1.05; }
+  .mode b { display: block; font-size: 1.05rem; font-weight: 600; }
+  .mode span { color: var(--muted); font-size: .88rem; }
+  .mode.locked { opacity: .55; box-shadow: none; }
+  .mode.locked .letter { filter: grayscale(1); }
+
+  .opts { margin-top: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 4px 16px; }
+  .opt-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--line); }
+  .opt-row:last-child { border-bottom: 0; }
+  .opt-row small { display: block; color: var(--muted); font-size: .85rem; }
+  .opt-row.locked { color: var(--muted); }
+  .switch { position: relative; width: 48px; height: 28px; border-radius: 99px; border: 0; background: var(--line-strong); flex: none; transition: background .15s; }
+  .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: transform .15s; box-shadow: 0 1px 2px rgba(0,0,0,.25); }
+  .switch[aria-checked="true"] { background: var(--primary); }
+  .switch[aria-checked="true"]::after { transform: translateX(20px); }
+  .switch:disabled { opacity: .4; cursor: not-allowed; }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent); }
+    50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent) 0%, transparent); }
+  }
+  .blink { animation: pulse 1.4s ease-in-out infinite; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
+  .wordlist { width: 100%; border-collapse: collapse; }
+  .wordlist td { padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  .wordlist tr:last-child td { border-bottom: 0; }
+  .wordlist td:first-child { width: 44px; text-align: center; }
+  .wordlist td.nlw { font-weight: 600; }
+  .wordlist td.spk { width: 44px; padding: 0 4px; }
+  .wordlist .emoji { font-size: 1.4rem; }
+  .wordlist .digit { font-size: 1.1rem; }
+  .wordlist .swatch { width: 22px; height: 22px; vertical-align: middle; }
+  .wordlist .muted { color: var(--muted); }
+  .wordlist tr.locked-word { opacity: .38; filter: grayscale(1); }
+
+  /* ===== Exercício ===== */
+  .progress { flex: 1; height: 6px; background: var(--primary-soft); border-radius: 99px; overflow: hidden; }
+  .progress > div { height: 100%; background: var(--primary); border-radius: 99px; transition: width .25s; }
+  .count { color: var(--muted); font-size: .85rem; min-width: 44px; text-align: right; font-variant-numeric: tabular-nums; }
+
+  .prompt { text-align: center; padding: 28px 8px 8px; }
+  .prompt-word { font-size: clamp(2rem, 8vw, 3rem); font-weight: 800; letter-spacing: -0.025em; line-height: 1.1; overflow-wrap: anywhere; }
+  .prompt-actions { display: flex; justify-content: center; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .prompt-img { margin-bottom: 4px; }
+  .prompt-img .emoji { font-size: 4.2rem; }
+  .prompt-img .digit { font-size: 3.6rem; }
+  .prompt-img .digit.long { font-size: 2.2rem; }
+  .prompt-img .swatch { width: 76px; height: 76px; }
+  .big-play { width: 112px; height: 112px; border-radius: 50%; border: 0; background: var(--primary); color: var(--primary-ink); font-size: 2.6rem; box-shadow: var(--shadow); transition: transform .08s; }
+  .big-play:active { transform: scale(.96); }
+  .hint { color: var(--muted); margin: 12px 0 0; font-size: .95rem; }
+
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+  @media (min-width: 560px) { .choices { grid-template-columns: repeat(3, 1fr); } }
+  .choice {
+    position: relative; min-height: 60px; padding: 12px; border-radius: var(--r);
+    border: 1px solid var(--line); background: var(--surface); font-weight: 600; font-size: 1.02rem; box-shadow: var(--shadow);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    transition: transform .08s, border-color .12s, background .15s;
+  }
+  .choice:not(:disabled):hover { border-color: var(--primary); }
+  .choice:not(:disabled):active { transform: scale(.97); }
+  .choice.img { min-height: 108px; }
+  .choice .key { position: absolute; top: 6px; left: 9px; font-size: .68rem; color: var(--muted); font-weight: 500; }
+  .choice .cap { font-size: .92rem; font-weight: 600; line-height: 1.2; }
+  .choice.correct { border-color: var(--ok); background: var(--ok-soft); color: var(--ok); }
+  .choice.wrong { border-color: var(--bad); background: var(--bad-soft); color: var(--bad); }
+  .choice:disabled { cursor: default; box-shadow: none; }
+  .choice:disabled:not(.correct):not(.wrong), .choice.audio.done { opacity: .45; }
+  .emoji { font-size: 2.8rem; line-height: 1; }
+  .digit { font-size: 2.4rem; font-weight: 800; line-height: 1; color: var(--primary); font-family: var(--display); }
+  .digit.long { font-size: 1.4rem; white-space: nowrap; }
+  .swatch { display: inline-block; width: 50px; height: 50px; border-radius: 50%; border: 1px solid var(--line-strong); }
+  @media (hover: none) and (pointer: coarse) { .choice .key { display: none; } }
+
+  /* Opções só com som */
+  .choice.audio { flex-direction: row; gap: 10px; justify-content: center; min-height: 70px; }
+  .choice.audio .play { width: 48px; height: 48px; border-radius: 50%; border: 0; background: var(--primary); color: var(--primary-ink); font-size: 1.3rem; flex: none; }
+  .choice.audio .pick { border: 1px solid var(--line-strong); background: var(--bg); border-radius: var(--r-sm); padding: 8px 12px; font-weight: 600; }
+  .choice.audio .pick:hover { border-color: var(--primary); }
+
+  /* De ou het */
+  .choices.articles { grid-template-columns: 1fr 1fr; max-width: 400px; margin-left: auto; margin-right: auto; }
+  .art-choice { font-size: 2rem; font-weight: 800; min-height: 88px; }
+  .art-choice.art-de:not(.wrong):not(.correct) { color: var(--de); }
+  .art-choice.art-het:not(.wrong):not(.correct) { color: var(--het); }
+
+  .typing { display: flex; gap: 8px; margin-top: 20px; }
+  .typing input {
+    flex: 1; min-width: 0; font: inherit; font-size: 1.15rem; padding: 12px 14px; border-radius: var(--r-sm);
+    border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink);
+  }
+  .hint-box { margin-top: 10px; font-family: var(--display); font-size: 1.4rem; letter-spacing: .08em; font-weight: 700; text-align: center; color: var(--ink); }
+  .hint-row { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+  .hint-row small { color: var(--muted); }
+  /* Apresentação das palavras novas */
+  .intro-text { color: var(--muted); margin: 0 0 14px; }
+  .intro-list { display: grid; gap: 10px; }
+  .intro-card { padding: 14px 16px; }
+  .intro-card.ok { border-color: var(--ok); }
+  .intro-top { display: flex; align-items: center; gap: 12px; }
+  .intro-img .emoji { font-size: 2.2rem; }
+  .intro-img .digit { font-size: 1.6rem; }
+  .intro-img .swatch { width: 36px; height: 36px; }
+  .intro-words { flex: 1; min-width: 0; }
+  .intro-nl { font-family: var(--display); font-size: 1.4rem; font-weight: 700; line-height: 1.15; }
+  .intro-pt { color: var(--muted); }
+  .intro-card .typing { margin-top: 10px; align-items: center; }
+  .intro-card .check { width: 28px; color: var(--ok); font-weight: 800; font-size: 1.3rem; text-align: center; }
+  .intro-card.ok input { border-color: var(--ok); background: var(--ok-soft); }
+  .primary:disabled { opacity: .45; cursor: not-allowed; }
+  .typing input.correct { border-color: var(--ok); background: var(--ok-soft); }
+  .typing input.wrong { border-color: var(--bad); background: var(--bad-soft); }
+
+  /* Painel de resposta: fixo ao fundo do ecrã, por cima da página; a página continua a rolar por trás */
+  .feedback {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; margin: 0 auto; max-width: 720px;
+    border-radius: var(--r) var(--r) 0 0; padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border: 1px solid transparent; border-bottom: 0;
+    box-shadow: 0 -8px 30px -12px rgba(23, 33, 58, .35); animation: rise .22s ease-out;
+    max-height: 70vh; overflow-y: auto;
+  }
+  @keyframes rise { from { transform: translateY(100%); } }
+  .feedback.ok { background: var(--ok-soft); border-color: color-mix(in srgb, var(--ok) 35%, transparent); }
+  .feedback.bad { background: var(--bad-soft); border-color: color-mix(in srgb, var(--bad) 35%, transparent); }
+  body.has-panel #app { padding-bottom: 260px; }
+  .feedback .msg { flex: 1; min-width: 180px; }
+  .feedback .msg b { display: block; font-size: 1rem; }
+  .feedback.ok .msg b { color: var(--ok); }
+  .feedback.bad .msg b { color: var(--bad); }
+  .feedback .pair { font-weight: 600; }
+  .feedback .iconbtn { color: var(--ink); }
+
+  /* ===== Resultado ===== */
+  .result { text-align: center; padding-top: 16px; }
+  .score { font-size: clamp(3.6rem, 16vw, 5.5rem); font-weight: 800; color: var(--primary); line-height: 1; letter-spacing: -0.04em; }
+  .result p { color: var(--muted); margin: 8px 0 0; }
+  .gain { font-weight: 600; color: var(--ink) !important; }
+  .actions { display: flex; gap: 10px; justify-content: center; margin-top: 24px; flex-wrap: wrap; }
+  .mistakes { text-align: left; margin-top: 28px; }
+  .result-xp { max-width: 260px; margin: 16px auto 0; }
+  .result-xp .xp { width: 100%; }
+  .levelup { margin-top: 14px; padding: 12px 16px; border-radius: var(--r-sm); background: var(--accent); color: #fff; font-weight: 600; }
+  .feedback .levelup { flex-basis: 100%; }
+  .result .levelup { display: inline-block; animation: pop .5s cubic-bezier(.2, 1.4, .4, 1); }
+  @keyframes pop { from { transform: scale(.4); opacity: 0; } }
+  .confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 5; }
+  .confetti i { position: absolute; top: -20px; width: 12px; height: 12px; border-radius: 2px; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); opacity: .2; } }
+</style>
+</head>
+<body>
+<div id="splash" aria-hidden="true"><div class="logo">🌷</div><h1 lang="nl">Woordjes</h1></div>
+<main id="app"></main>
+
+<script>
+// ============ PALAVRAS ============
+// [neerlandês, português, imagem, artigo]  imagem: emoji, "#cor" ou número
+// O 4.º campo só existe onde a palavra não traz o artigo mas o tem como nome (het rood, de maandag): serve para o de/het
+// A ORDEM CONTA: as 6 primeiras são as do nível 0 (as mais importantes), depois entram 3 por nível
+// img:false nos tópicos onde as imagens não ajudam (calendário, família)
+// O português aparece sempre com a imagem, quando existe (nas perguntas e nas respostas)
+const TOPICS = [
+  { id: 'groenten', pt: 'Vegetais', nl: 'Groenten', icon: '🥕', img: true, words: [
+    ['de aardappel', 'batata', '🥔'], ['de tomaat', 'tomate', '🍅'], ['de ui', 'cebola', '🧅'],
+    ['de wortel', 'cenoura', '🥕'], ['de sla', 'alface', '🥬'], ['de komkommer', 'pepino', '🥒'],
+    ['de paprika', 'pimento', '🫑'], ['de knoflook', 'alho', '🧄'], ['de champignon', 'cogumelo', '🍄'],
+    ['de broccoli', 'brócolos', '🥦'], ['de bonen', 'feijão', '🫘'], ['de erwten', 'ervilhas', '🫛'],
+    ['de maïs', 'milho', '🌽'], ['de bloemkool', 'couve-flor'], ['de spinazie', 'espinafres'],
+    ['de prei', 'alho-francês'], ['de courgette', 'curgete'], ['de sperziebonen', 'feijão-verde'],
+    ['de kool', 'couve'], ['de aubergine', 'beringela', '🍆'], ['de pompoen', 'abóbora', '🎃'],
+    ['de zoete aardappel', 'batata-doce', '🍠'], ['de peper', 'malagueta', '🌶️'], ['de spruitjes', 'couves-de-bruxelas'],
+    ['de selderij', 'aipo'], ['de radijs', 'rabanete'], ['de biet', 'beterraba'],
+    ['de asperge', 'espargo'], ['de gember', 'gengibre', '🫚'], ['de olijf', 'azeitona', '🫒'],
+    ['de linzen', 'lentilhas'], ['de kikkererwten', 'grão-de-bico'], ['de rode kool', 'couve-roxa'],
+    ['de witlof', 'endívia'], ['de andijvie', 'escarola'], ['de rucola', 'rúcula'],
+    ['de venkel', 'funcho'], ['de artisjok', 'alcachofra'], ['de sjalot', 'chalota'],
+    ['de raap', 'nabo'],
+  ]},
+  { id: 'fruit', pt: 'Frutas', nl: 'Fruit', icon: '🍎', img: true, words: [
+    ['de appel', 'maçã', '🍎'], ['de banaan', 'banana', '🍌'], ['de sinaasappel', 'laranja', '🍊'],
+    ['de peer', 'pera', '🍐'], ['de aardbei', 'morango', '🍓'], ['de druif', 'uva', '🍇'],
+    ['de citroen', 'limão', '🍋'], ['de kers', 'cereja', '🍒'], ['de watermeloen', 'melancia', '🍉'],
+    ['de meloen', 'melão', '🍈'], ['de ananas', 'ananás', '🍍'], ['de perzik', 'pêssego', '🍑'],
+    ['de mandarijn', 'tangerina'], ['de kiwi', 'kiwi', '🥝'], ['de mango', 'manga', '🥭'],
+    ['de pruim', 'ameixa'], ['de framboos', 'framboesa'], ['de bosbes', 'mirtilo', '🫐'],
+    ['de avocado', 'abacate', '🥑'], ['de kokosnoot', 'coco', '🥥'], ['de abrikoos', 'alperce'],
+    ['de braam', 'amora'], ['de limoen', 'lima'], ['de grapefruit', 'toranja'],
+    ['de vijg', 'figo'], ['de granaatappel', 'romã'], ['de nectarine', 'nectarina'],
+    ['de papaja', 'papaia'], ['de passievrucht', 'maracujá'], ['de clementine', 'clementina'],
+    ['de dadel', 'tâmara'], ['de rozijn', 'passa'], ['de rode bes', 'groselha'],
+    ['de lychee', 'lichia'], ['de guave', 'goiaba'], ['de persimoen', 'dióspiro'],
+    ['de kweepeer', 'marmelo'], ['de sterfruit', 'carambola'], ['de cranberry', 'arando'],
+    ['de drakenvrucht', 'pitaia'],
+  ]},
+  { id: 'dieren', pt: 'Animais', nl: 'Dieren', icon: '🐄', img: true, words: [
+    ['de hond', 'cão', '🐕'], ['de kat', 'gato', '🐈'], ['de vogel', 'pássaro', '🐦'],
+    ['de vis', 'peixe', '🐟'], ['het paard', 'cavalo', '🐎'], ['de koe', 'vaca', '🐄'],
+    ['het varken', 'porco', '🐖'], ['de kip', 'galinha', '🐔'], ['het schaap', 'ovelha', '🐑'],
+    ['de muis', 'rato', '🐭'], ['het konijn', 'coelho', '🐇'], ['de eend', 'pato', '🦆'],
+    ['de geit', 'cabra', '🐐'], ['de haan', 'galo', '🐓'], ['de beer', 'urso', '🐻'],
+    ['de olifant', 'elefante', '🐘'], ['de leeuw', 'leão', '🦁'], ['de aap', 'macaco', '🐒'],
+    ['de slang', 'cobra', '🐍'], ['de kikker', 'sapo', '🐸'], ['de vlinder', 'borboleta', '🦋'],
+    ['de bij', 'abelha', '🐝'], ['de mier', 'formiga', '🐜'], ['de spin', 'aranha', '🕷️'],
+    ['de slak', 'caracol', '🐌'], ['de wolf', 'lobo', '🐺'], ['de vos', 'raposa', '🦊'],
+    ['het hert', 'veado', '🦌'], ['de eekhoorn', 'esquilo', '🐿️'], ['de uil', 'coruja', '🦉'],
+    ['de tijger', 'tigre', '🐅'], ['de giraf', 'girafa', '🦒'], ['de zebra', 'zebra', '🦓'],
+    ['de kameel', 'camelo', '🐫'], ['de krokodil', 'crocodilo', '🐊'], ['de schildpad', 'tartaruga', '🐢'],
+    ['de pinguïn', 'pinguim', '🐧'], ['de walvis', 'baleia', '🐋'], ['de dolfijn', 'golfinho', '🐬'],
+    ['de haai', 'tubarão', '🦈'],
+  ]},
+  { id: 'tijd', pt: 'Tempo e calendário', nl: 'Tijd en kalender', icon: '📅', img: false, words: [
+    ['maandag', 'segunda-feira', null, 'de'], ['dinsdag', 'terça-feira', null, 'de'], ['woensdag', 'quarta-feira', null, 'de'],
+    ['donderdag', 'quinta-feira', null, 'de'], ['vrijdag', 'sexta-feira', null, 'de'], ['zaterdag', 'sábado', null, 'de'], ['zondag', 'domingo', null, 'de'],
+    ['vandaag', 'hoje'], ['morgen', 'amanhã'], ['gisteren', 'ontem'], ['het weekend', 'fim de semana'],
+    ['de dag', 'dia'], ['de week', 'semana'], ['de maand', 'mês'], ['het jaar', 'ano'],
+    ['januari', 'janeiro'], ['februari', 'fevereiro'], ['maart', 'março'], ['april', 'abril'],
+    ['mei', 'maio'], ['juni', 'junho'], ['juli', 'julho'], ['augustus', 'agosto'],
+    ['september', 'setembro'], ['oktober', 'outubro'], ['november', 'novembro'], ['december', 'dezembro'],
+    ['het uur', 'hora'], ['de minuut', 'minuto'], ['de seconde', 'segundo'],
+    ['het kwartaal', 'trimestre'], ['het semester', 'semestre'], ['het decennium', 'década'],
+    ['de eeuw', 'século'], ['het millennium', 'milénio'],
+  ]},
+  { id: 'getallen', pt: 'Números', nl: 'Getallen', icon: '🔢', img: true, words: [
+    ['één', 'um', '1'], ['twee', 'dois', '2'], ['drie', 'três', '3'], ['vier', 'quatro', '4'],
+    ['vijf', 'cinco', '5'], ['zes', 'seis', '6'], ['zeven', 'sete', '7'], ['acht', 'oito', '8'],
+    ['negen', 'nove', '9'], ['tien', 'dez', '10'], ['nul', 'zero', '0'], ['elf', 'onze', '11'],
+    ['twaalf', 'doze', '12'], ['dertien', 'treze', '13'], ['veertien', 'catorze', '14'],
+    ['vijftien', 'quinze', '15'], ['zestien', 'dezasseis', '16'], ['zeventien', 'dezassete', '17'],
+    ['achttien', 'dezoito', '18'], ['negentien', 'dezanove', '19'], ['twintig', 'vinte', '20'],
+    ['dertig', 'trinta', '30'], ['veertig', 'quarenta', '40'], ['vijftig', 'cinquenta', '50'],
+    ['zestig', 'sessenta', '60'], ['zeventig', 'setenta', '70'], ['tachtig', 'oitenta', '80'],
+    ['negentig', 'noventa', '90'], ['honderd', 'cem', '100'], ['duizend', 'mil', '1000'],
+    ['tienduizend', 'dez mil', '10 000'], ['honderdduizend', 'cem mil', '100 000'], ['een miljoen', 'um milhão', '1 000 000'],
+  ]},
+  { id: 'kleuren', pt: 'Cores', nl: 'Kleuren', icon: '🎨', img: true, words: [
+    ['rood', 'vermelho', '#D32F2F', 'het'], ['blauw', 'azul', '#1E63D6', 'het'], ['geel', 'amarelo', '#FBC02D', 'het'],
+    ['groen', 'verde', '#2E9D4F', 'het'], ['zwart', 'preto', '#000000', 'het'], ['wit', 'branco', '#FFFFFF', 'het'],
+    ['oranje', 'laranja', '#F57C00', 'het'], ['roze', 'cor-de-rosa', '#F48FB1', 'het'], ['paars', 'roxo', '#7B1FA2', 'het'],
+    ['bruin', 'castanho', '#6D4C41', 'het'], ['grijs', 'cinzento', '#9E9E9E', 'het'],
+    ['licht', 'claro'], ['donker', 'escuro'],
+    ['lichtblauw', 'azul-claro', '#81C7F5', 'het'], ['donkerblauw', 'azul-escuro', '#1A237E', 'het'],
+    ['goud', 'dourado', '#D4AF37', 'het'], ['zilver', 'prateado', '#C0C0C0', 'het'], ['beige', 'bege', '#D8C3A5', 'het'],
+    ['turquoise', 'turquesa', '#1ABC9C', 'het'], ['lila', 'lilás', '#C8A2C8', 'het'], ['bordeaux', 'cor de vinho', '#7B1E3A', 'het'],
+  ]},
+  { id: 'familie', pt: 'Família', nl: 'Familie', icon: '👨‍👩‍👦', img: false, words: [
+    ['de vader', 'pai'], ['de moeder', 'mãe'], ['de broer', 'irmão'], ['de zus', 'irmã'],
+    ['het kind', 'criança'], ['de zoon', 'filho'], ['de dochter', 'filha'], ['de opa', 'avô'],
+    ['de oma', 'avó'], ['de ouders', 'pais'], ['de oom', 'tio'], ['de tante', 'tia'],
+    ['de man', 'marido'], ['de vrouw', 'esposa'], ['de baby', 'bebé'],
+    // neef e nicht servem para primo/sobrinho e prima/sobrinha
+    ['de neef', 'primo / sobrinho'], ['de nicht', 'prima / sobrinha'],
+    ['de kleinzoon', 'neto'], ['de kleindochter', 'neta'], ['de grootouders', 'avós'],
+    ['de zwager', 'cunhado'], ['de schoonzus', 'cunhada'], ['de schoonvader', 'sogro'],
+    ['de schoonmoeder', 'sogra'], ['de schoonzoon', 'genro'], ['de schoondochter', 'nora'],
+    ['de stiefvader', 'padrasto'], ['de stiefmoeder', 'madrasta'], ['de peetvader', 'padrinho'],
+    ['de peetmoeder', 'madrinha'], ['de peetzoon', 'afilhado'], ['de peetdochter', 'afilhada'],
+    ['de tweeling', 'gémeos'],
+  ]},
+  { id: 'lichaam', pt: 'Corpo', nl: 'Het lichaam', icon: '✋', img: true, words: [
+    ['de hand', 'mão', '✋'], ['het oog', 'olho', '👁️'], ['de mond', 'boca', '👄'],
+    ['de neus', 'nariz', '👃'], ['het hoofd', 'cabeça'], ['het oor', 'orelha', '👂'],
+    ['de voet', 'pé', '🦶'], ['de arm', 'braço', '💪'], ['het been', 'perna', '🦵'],
+    ['het haar', 'cabelo'], ['de tand', 'dente', '🦷'], ['de vinger', 'dedo'],
+    ['de buik', 'barriga'], ['de rug', 'costas'], ['het hart', 'coração', '🫀'],
+    ['de knie', 'joelho'], ['de tong', 'língua', '👅'], ['de hersenen', 'cérebro', '🧠'],
+    ['de schouder', 'ombro'], ['de nek', 'pescoço'], ['de elleboog', 'cotovelo'],
+    ['de pols', 'pulso'], ['de nagel', 'unha', '💅'], ['de teen', 'dedo do pé'],
+    ['de enkel', 'tornozelo'], ['de heup', 'anca'], ['de borst', 'peito'],
+    ['de huid', 'pele'], ['het bot', 'osso', '🦴'], ['de spier', 'músculo'],
+    ['de maag', 'estômago'], ['de lip', 'lábio'], ['de wenkbrauw', 'sobrancelha'],
+    ['de baard', 'barba', '🧔'],
+  ]},
+  { id: 'eten', pt: 'Comida e bebida', nl: 'Eten en drinken', icon: '🍞', img: true, words: [
+    ['het water', 'água', '💧'], ['het brood', 'pão', '🍞'], ['de melk', 'leite', '🥛'],
+    ['de koffie', 'café', '☕'], ['de kaas', 'queijo', '🧀'], ['het ei', 'ovo', '🥚'],
+    ['de thee', 'chá', '🍵'], ['het vlees', 'carne', '🥩'], ['de rijst', 'arroz', '🍚'],
+    ['de boter', 'manteiga', '🧈'], ['de soep', 'sopa', '🍲'], ['het zout', 'sal', '🧂'],
+    ['de suiker', 'açúcar'], ['het ontbijt', 'pequeno-almoço'], ['de lunch', 'almoço'],
+    ['het avondeten', 'jantar'], ['het tussendoortje', 'lanche'], ['de maaltijd', 'refeição', '🍽️'],
+    ['de boterham', 'sandes', '🥪'], ['het broodje', 'pãozinho'], ['de kip', 'frango (carne)'],
+    ['het varkensvlees', 'carne de porco'], ['het rundvlees', 'carne de vaca'], ['de zalm', 'salmão'],
+    ['de garnaal', 'camarão', '🦐'], ['de worst', 'salsicha', '🌭'], ['de ham', 'fiambre'],
+    ['het spek', 'bacon', '🥓'], ['de pasta', 'massa', '🍝'], ['de pizza', 'pizza', '🍕'],
+    ['de patat', 'batatas fritas', '🍟'], ['de hamburger', 'hambúrguer', '🍔'], ['de kroket', 'croquete'],
+    ['de pannenkoek', 'panqueca', '🥞'], ['de aardappelpuree', 'puré de batata'], ['de olijfolie', 'azeite', '🫒'],
+    ['de azijn', 'vinagre'], ['de zwarte peper', 'pimenta'], ['de mosterd', 'mostarda'],
+    ['de saus', 'molho'], ['de honing', 'mel', '🍯'], ['de jam', 'compota'],
+    ['de pindakaas', 'manteiga de amendoim'], ['de hagelslag', 'granulado de chocolate'], ['de kaneel', 'canela'],
+    ['het kruid', 'erva aromática', '🌿'], ['de yoghurt', 'iogurte'], ['de room', 'natas'],
+    ['de ontbijtgranen', 'cereais', '🥣'], ['de chocolade', 'chocolate', '🍫'], ['het snoep', 'doces', '🍬'],
+    ['het koekje', 'bolacha', '🍪'], ['de taart', 'bolo', '🎂'], ['het gebak', 'pastel', '🧁'],
+    ['de pudding', 'pudim', '🍮'], ['het ijs', 'gelado', '🍦'], ['de stroopwafel', 'stroopwafel', '🧇'],
+    ['het sap', 'sumo', '🧃'], ['de frisdrank', 'refrigerante', '🥤'], ['het bier', 'cerveja', '🍺'],
+    ['de wijn', 'vinho', '🍷'], ['zoet', 'doce (sabor)'], ['zuur', 'azedo'],
+    ['bitter', 'amargo'], ['pittig', 'picante'], ['hartig', 'salgado'],
+  ]},
+  { id: 'kleding', pt: 'Roupa', nl: 'Kleding', icon: '👕', img: true, words: [
+    ['het T-shirt', 't-shirt', '👕'], ['de broek', 'calças', '👖'], ['de schoenen', 'sapatos', '👞'],
+    ['de jas', 'casaco', '🧥'], ['de sokken', 'meias', '🧦'], ['de jurk', 'vestido', '👗'],
+    ['de pet', 'boné', '🧢'], ['de sjaal', 'cachecol', '🧣'], ['de handschoenen', 'luvas', '🧤'],
+    ['de korte broek', 'calções', '🩳'], ['de laarzen', 'botas', '👢'], ['de hoed', 'chapéu', '🎩'],
+    ['de stropdas', 'gravata', '👔'], ['de trui', 'camisola'], ['het overhemd', 'camisa'],
+    ['de blouse', 'blusa'], ['de rok', 'saia'], ['de spijkerbroek', 'calças de ganga'],
+    ['het pak', 'fato'], ['het ondergoed', 'roupa interior', '🩲'], ['de onderbroek', 'cuecas'],
+    ['de bh', 'soutien'], ['de pyjama', 'pijama'], ['de badjas', 'roupão'],
+    ['het badpak', 'fato de banho', '🩱'], ['de zwembroek', 'calções de banho'], ['de slippers', 'chinelos', '🩴'],
+    ['de sandalen', 'sandálias'], ['de sneakers', 'ténis (calçado)', '👟'], ['de riem', 'cinto'],
+    ['de muts', 'gorro'], ['de zonnebril', 'óculos de sol', '🕶️'], ['de kleding', 'roupa'],
+    ['de maat', 'tamanho'], ['de knoop', 'botão'], ['de rits', 'fecho'],
+    ['de zak', 'bolso'], ['de mouw', 'manga'],
+  ]},
+  { id: 'huis', pt: 'Casa', nl: 'Het huis', icon: '🏠', img: true, words: [
+    ['het huis', 'casa', '🏠'], ['de deur', 'porta', '🚪'], ['het raam', 'janela', '🪟'],
+    ['de keuken', 'cozinha'], ['de badkamer', 'casa de banho'], ['de slaapkamer', 'quarto'],
+    ['de woonkamer', 'sala de estar'], ['het appartement', 'apartamento'], ['de tuin', 'jardim', '🏡'],
+    ['de trap', 'escadas'], ['de muur', 'parede', '🧱'], ['het dak', 'telhado'],
+    ['de vloer', 'chão'], ['het plafond', 'teto'], ['de gang', 'corredor'],
+    ['de eetkamer', 'sala de jantar'], ['de werkkamer', 'escritório'], ['het balkon', 'varanda'],
+    ['het terras', 'terraço'], ['de garage', 'garagem'], ['de zolder', 'sótão'],
+    ['de kelder', 'cave'], ['het flatgebouw', 'prédio', '🏢'], ['het rijtjeshuis', 'moradia em banda', '🏘️'],
+    ['de villa', 'vivenda'], ['de boerderij', 'quinta'], ['de woonboot', 'casa-barco'],
+    ['de tent', 'tenda', '⛺'], ['de caravan', 'caravana'], ['het kasteel', 'castelo', '🏰'],
+    ['de hut', 'cabana', '🛖'],
+  ]},
+  { id: 'objecten', pt: 'Objetos', nl: 'Voorwerpen', icon: '🪑', img: true, words: [
+    ['de tafel', 'mesa'], ['de stoel', 'cadeira', '🪑'], ['het bed', 'cama', '🛏️'],
+    ['de bank', 'sofá', '🛋️'], ['de kast', 'armário'], ['de lamp', 'candeeiro', '💡'],
+    ['de sleutel', 'chave', '🔑'], ['het bord', 'prato', '🍽️'], ['het glas', 'copo', '🥃'],
+    ['het mes', 'faca', '🔪'], ['de vork', 'garfo'], ['de lepel', 'colher', '🥄'],
+    ['het bestek', 'talheres', '🍴'], ['het kopje', 'chávena', '☕'], ['de pan', 'panela'],
+    ['de koelkast', 'frigorífico'], ['de oven', 'forno'], ['de magnetron', 'micro-ondas'],
+    ['de douche', 'chuveiro', '🚿'], ['het bad', 'banheira', '🛁'], ['het toilet', 'sanita', '🚽'],
+    ['de wastafel', 'lavatório'], ['de handdoek', 'toalha'], ['de zeep', 'sabonete', '🧼'],
+    ['de tandenborstel', 'escova de dentes', '🪥'], ['het toiletpapier', 'papel higiénico', '🧻'], ['de spiegel', 'espelho', '🪞'],
+    ['het kussen', 'almofada'], ['de deken', 'cobertor'], ['de wekker', 'despertador', '⏰'],
+    ['de klok', 'relógio', '🕰️'], ['de televisie', 'televisão', '📺'], ['het gordijn', 'cortina'],
+    ['de computer', 'computador', '💻'], ['de telefoon', 'telefone', '☎️'], ['de pen', 'caneta', '🖊️'],
+    ['het papier', 'papel', '📄'], ['het boek', 'livro', '📕'], ['de schaar', 'tesoura', '✂️'],
+    ['de wasmachine', 'máquina de lavar roupa'], ['de mobiele telefoon', 'telemóvel', '📱'], ['de tas', 'mala', '👜'],
+    ['de portemonnee', 'carteira', '👛'], ['de bril', 'óculos', '👓'], ['de vuilnisbak', 'caixote do lixo', '🗑️'],
+    ['de fles', 'garrafa', '🍾'], ['de doos', 'caixa', '📦'], ['de rugzak', 'mochila', '🎒'],
+    ['het potlood', 'lápis', '✏️'], ['het bureau', 'secretária'], ['de tandpasta', 'pasta de dentes'],
+    ['de kam', 'pente'], ['de plant', 'planta', '🪴'], ['het schilderij', 'quadro', '🖼️'],
+    ['de kaars', 'vela', '🕯️'], ['het tapijt', 'tapete'], ['de stofzuiger', 'aspirador'],
+    ['de bezem', 'vassoura', '🧹'], ['de emmer', 'balde', '🪣'], ['de afstandsbediening', 'comando da televisão'],
+    ['de vaatwasser', 'máquina da loiça'], ['de waterkoker', 'chaleira'], ['de haardroger', 'secador de cabelo'],
+    ['de strijkbout', 'ferro de engomar'],
+  ]},
+  { id: 'weer', pt: 'Meteorologia e estações', nl: 'Weer en seizoenen', icon: '🌦️', img: true, words: [
+    ['de zon', 'sol', '☀️'], ['de regen', 'chuva', '🌧️'], ['de wind', 'vento', '💨'],
+    ['warm', 'quente', '🥵'], ['koud', 'frio', '🥶'], ['het weer', 'o tempo (meteorologia)'],
+    ['de wolk', 'nuvem', '☁️'], ['de sneeuw', 'neve', '❄️'], ['de lente', 'primavera', '🌷'],
+    ['de zomer', 'verão', '🏖️'], ['de herfst', 'outono', '🍂'], ['de winter', 'inverno', '⛄'],
+    ['het seizoen', 'estação do ano'], ['de paraplu', 'guarda-chuva', '☂️'], ['het onweer', 'trovoada', '⛈️'],
+    ['de bliksem', 'relâmpago', '⚡'], ['de mist', 'nevoeiro', '🌫️'], ['de storm', 'tempestade', '🌪️'],
+    ['de regenboog', 'arco-íris', '🌈'], ['de temperatuur', 'temperatura', '🌡️'],
+    ['bewolkt', 'nublado', '🌥️'], ['zonnig', 'soalheiro'], ['regenachtig', 'chuvoso'],
+    ['de bui', 'aguaceiro'], ['de hagel', 'granizo'], ['de vorst', 'geada'],
+    ['de graden', 'graus'], ['de weersvoorspelling', 'previsão do tempo'], ['het klimaat', 'clima'],
+    ['de zonsopgang', 'nascer do sol', '🌅'], ['de zonsondergang', 'pôr do sol', '🌇'],
+  ]},
+  { id: 'beroepen', pt: 'Profissões', nl: 'Beroepen', icon: '🧑‍🍳', img: true, words: [
+    ['de dokter', 'médico', '🧑‍⚕️'], ['de leraar', 'professor', '🧑‍🏫'], ['de politieagent', 'polícia', '👮'],
+    ['de kok', 'cozinheiro', '🧑‍🍳'], ['de verpleegkundige', 'enfermeiro'], ['de verkoper', 'vendedor'],
+    ['de student', 'estudante', '🧑‍🎓'], ['de ober', 'empregado de mesa'], ['de chauffeur', 'motorista', '🚚'],
+    ['de bakker', 'padeiro', '🥖'], ['de boer', 'agricultor', '🧑‍🌾'], ['de kapper', 'cabeleireiro', '💇'],
+    ['de tandarts', 'dentista', '🦷'], ['de apotheker', 'farmacêutico', '💊'], ['de brandweerman', 'bombeiro', '🧑‍🚒'],
+    ['de monteur', 'mecânico', '🧑‍🔧'], ['de schoonmaker', 'empregado de limpeza'], ['de programmeur', 'programador', '🧑‍💻'],
+    ['de advocaat', 'advogado'], ['de postbode', 'carteiro', '📬'], ['de bouwvakker', 'operário', '👷'],
+    ['de dierenarts', 'veterinário', '🐾'], ['de journalist', 'jornalista', '📰'], ['de fotograaf', 'fotógrafo', '📸'],
+    ['de architect', 'arquiteto', '📐'], ['de ingenieur', 'engenheiro'], ['de piloot', 'piloto', '🧑‍✈️'],
+    ['de timmerman', 'carpinteiro', '🪚'], ['de loodgieter', 'canalizador', '🪠'], ['de elektricien', 'eletricista', '🔌'],
+    ['de slager', 'talhante', '🔪'], ['de visser', 'pescador', '🎣'], ['de soldaat', 'soldado', '🪖'],
+    ['de muzikant', 'músico', '🎸'], ['de acteur', 'ator', '🎭'], ['de tuinman', 'jardineiro', '🌱'],
+    ['de rechter', 'juiz', '🧑‍⚖️'], ['de schilder', 'pintor', '🧑‍🎨'], ['de zanger', 'cantor', '🧑‍🎤'],
+    ['de wetenschapper', 'cientista', '🧑‍🔬'], ['de secretaresse', 'secretária'], ['de kassamedewerker', 'operador de caixa'],
+    ['de manager', 'gestor'], ['de directeur', 'diretor'], ['de ondernemer', 'empresário'],
+    ['de boekhouder', 'contabilista'], ['de ambtenaar', 'funcionário público'], ['de psycholoog', 'psicólogo'],
+    ['de vertaler', 'tradutor'], ['de schrijver', 'escritor', '✒️'], ['de kunstenaar', 'artista'],
+    ['de beveiliger', 'segurança'], ['de metselaar', 'pedreiro', '🧱'],
+  ]},
+  { id: 'werkwoorden', pt: 'Verbos do dia a dia', nl: 'Werkwoorden', icon: '🏃', img: true, words: [
+    ['zijn', 'ser / estar'], ['hebben', 'ter'], ['gaan', 'ir'], ['komen', 'vir'], ['willen', 'querer'],
+    ['kunnen', 'conseguir / poder'], ['moeten', 'ter de'], ['doen', 'fazer (uma ação)'], ['zeggen', 'dizer'], ['zien', 'ver'],
+    ['eten', 'comer', '🍽️'], ['drinken', 'beber', '🥤'], ['slapen', 'dormir', '😴'], ['maken', 'fazer (criar)'], ['werken', 'trabalhar', '💼'],
+    ['praten', 'falar', '🗣️'], ['lopen', 'andar', '🚶'], ['kijken', 'olhar', '👀'], ['luisteren', 'ouvir', '🎧'], ['lezen', 'ler', '📖'],
+    ['schrijven', 'escrever', '✍️'], ['kopen', 'comprar', '🛒'], ['betalen', 'pagar', '💳'], ['weten', 'saber'], ['geven', 'dar'],
+    ['nemen', 'tomar'], ['wonen', 'morar', '🏠'], ['houden van', 'gostar de', '❤️'], ['helpen', 'ajudar', '🤝'], ['vragen', 'perguntar', '❓'],
+    ['antwoorden', 'responder', '💬'], ['begrijpen', 'perceber'], ['kennen', 'conhecer'], ['zoeken', 'procurar', '🔍'], ['vinden', 'encontrar'],
+    ['leren', 'aprender', '📚'], ['denken', 'pensar', '🤔'], ['koken', 'cozinhar', '🍳'], ['wassen', 'lavar', '🧼'], ['schoonmaken', 'limpar', '🧹'],
+    ['bellen', 'telefonar', '📞'], ['wachten', 'esperar', '⏳'], ['openen', 'abrir', '🔓'], ['sluiten', 'fechar', '🔒'], ['zitten', 'estar sentado', '🪑'],
+    ['staan', 'estar de pé', '🧍'], ['liggen', 'estar deitado', '🛌'], ['brengen', 'trazer'], ['verkopen', 'vender', '🏷️'], ['beginnen', 'começar'],
+    ['stoppen', 'parar', '🛑'], ['vergeten', 'esquecer'], ['rijden', 'conduzir', '🚗'], ['fietsen', 'andar de bicicleta', '🚴'], ['spelen', 'brincar', '🎲'],
+    ['rennen', 'correr', '🏃'], ['zwemmen', 'nadar', '🏊'], ['zingen', 'cantar', '🎤'], ['dansen', 'dançar', '💃'], ['lachen', 'rir', '😂'],
+    ['huilen', 'chorar', '😢'],
+  ]},
+  // Os primeiros 40 por ordem aproximada de frequência; cores e warm/koud já estão noutros tópicos
+  { id: 'bijvoeglijk', pt: 'Adjetivos', nl: 'Bijvoeglijke naamwoorden', icon: '✨', img: true, words: [
+    ['goed', 'bom', '👍'], ['groot', 'grande'], ['nieuw', 'novo', '🆕'], ['klein', 'pequeno'], ['oud', 'velho', '👴'],
+    ['lang', 'comprido'], ['hoog', 'alto'], ['ander', 'outro'], ['belangrijk', 'importante'], ['mooi', 'bonito'],
+    ['leuk', 'giro'], ['jong', 'jovem'], ['mogelijk', 'possível'], ['eigen', 'próprio'], ['laat', 'tarde'],
+    ['vroeg', 'cedo'], ['zwaar', 'pesado'], ['moeilijk', 'difícil'], ['makkelijk', 'fácil'], ['snel', 'rápido', '🏎️'],
+    ['echt', 'verdadeiro'], ['sterk', 'forte'], ['slecht', 'mau', '👎'], ['kort', 'curto'], ['laag', 'baixo'],
+    ['zeker', 'certo'], ['vrij', 'livre'], ['bekend', 'conhecido'], ['open', 'aberto'], ['nodig', 'necessário'],
+    ['duidelijk', 'claro (evidente)'], ['gelukkig', 'feliz'], ['lekker', 'saboroso', '😋'], ['duur', 'caro', '💰'], ['goedkoop', 'barato'],
+    ['ziek', 'doente', '🤒'], ['moe', 'cansado', '😩'], ['druk', 'ocupado'], ['rustig', 'calmo'], ['blij', 'contente', '😊'],
+    // Opostos que faltavam (para o exercício de opostos)
+    ['lelijk', 'feio'], ['zwak', 'fraco'], ['langzaam', 'lento', '🐌'], ['gezond', 'saudável'], ['verdrietig', 'triste', '😢'],
+    ['dicht', 'fechado'], ['dik', 'gordo'], ['dun', 'magro'], ['nat', 'molhado', '💦'], ['droog', 'seco'],
+    ['schoon', 'limpo'], ['vies', 'sujo'], ['leeg', 'vazio'], ['vol', 'cheio'], ['arm', 'pobre'],
+    ['rijk', 'rico'], ['slim', 'esperto'], ['dom', 'burro'], ['breed', 'largo'], ['smal', 'estreito'],
+    ['zacht', 'macio'], ['hard', 'duro'], ['bang', 'com medo', '😨'], ['boos', 'zangado', '😠'],
+  ]},
+  // Texto entre parênteses = só uma pista para distinguir palavras iguais (zij, jullie, haar);
+  // não se lê em voz alta nem é preciso escrevê-lo
+  { id: 'voornaamwoorden', pt: 'Pronomes', nl: 'Voornaamwoorden', icon: '🙋', img: false, words: [
+    ['ik', 'eu'], ['jij', 'tu'], ['hij', 'ele'], ['zij (singular)', 'ela'], ['wij', 'nós'],
+    ['jullie (sujeito)', 'vós / vocês'], ['zij (plural)', 'eles / elas'], ['u', 'você (formal)'],
+    ['mijn', 'meu / minha'], ['jouw', 'teu / tua'], ['zijn', 'dele'], ['haar (posse)', 'dela'],
+    ['onze', 'nosso / nossa'], ['jullie (posse)', 'vosso / vossa'], ['hun', 'deles / delas'], ['uw', 'seu / sua (formal)'],
+    ['mij', 'me / mim'], ['jou', 'te / ti'], ['hem', 'o / lhe (a ele)'], ['haar (objeto)', 'a / lhe (a ela)'],
+    ['ons', 'nos'], ['hen', 'os / lhes (a eles)'], ['dit', 'isto'], ['dat', 'isso / aquilo'],
+    ['iemand', 'alguém'],
+    ['niemand', 'ninguém'], ['iets', 'algo'], ['niets', 'nada'], ['alles', 'tudo'], ['iedereen', 'toda a gente'],
+    ['alle', 'todos / todas'], ['hele', 'todo / toda (inteiro)'], ['elk', 'cada'],
+  ]},
+  { id: 'gezondheid', pt: 'Saúde', nl: 'Gezondheid', icon: '🩺', img: true, words: [
+    ['de huisarts', 'médico de família', '🩺'], ['het ziekenhuis', 'hospital', '🏥'], ['de apotheek', 'farmácia', '💊'],
+    ['de pijn', 'dor'], ['het medicijn', 'medicamento'], ['de pil', 'comprimido'],
+    ['de hoofdpijn', 'dor de cabeça', '🤕'], ['de buikpijn', 'dor de barriga'], ['de keelpijn', 'dor de garganta'],
+    ['de koorts', 'febre', '🤒'], ['de verkoudheid', 'constipação', '🤧'], ['de griep', 'gripe'],
+    ['de hoest', 'tosse'], ['niezen', 'espirrar'], ['het recept', 'receita médica'],
+    ['de afspraak', 'marcação (consulta)'], ['de ziekte', 'doença'], ['de wond', 'ferida', '🩹'],
+    ['de pleister', 'penso'], ['het verband', 'ligadura'], ['het bloed', 'sangue', '🩸'],
+    ['de allergie', 'alergia'], ['de diabetes', 'diabetes'], ['de kanker', 'cancro'],
+    ['de zwangerschap', 'gravidez', '🤰'], ['zwanger', 'grávida'], ['de zorgverzekering', 'seguro de saúde'],
+    ['de ambulance', 'ambulância', '🚑'], ['de spoedeisende hulp', 'urgências'], ['de operatie', 'operação'],
+    ['de injectie', 'injeção', '💉'], ['het vaccin', 'vacina'], ['de thermometer', 'termómetro', '🌡️'],
+    ['de rolstoel', 'cadeira de rodas', '🦽'], ['het gips', 'gesso'], ['het virus', 'vírus', '🦠'],
+    ['de zalf', 'pomada'], ['de brandwond', 'queimadura'], ['misselijk', 'enjoado', '🤢'],
+    ['duizelig', 'tonto', '😵‍💫'], ['de bloeddruk', 'tensão arterial'], ['het gewicht', 'peso', '⚖️'],
+  ]},
+  { id: 'stad', pt: 'Cidade e compras', nl: 'Stad en winkelen', icon: '🏙️', img: true, words: [
+    ['de straat', 'rua'], ['de stad', 'cidade', '🏙️'], ['de winkel', 'loja', '🏪'],
+    ['de supermarkt', 'supermercado', '🏬'], ['het geld', 'dinheiro', '💶'], ['de weg', 'estrada', '🛣️'],
+    ['de stoep', 'passeio'], ['het stoplicht', 'semáforo', '🚦'], ['het zebrapad', 'passadeira'],
+    ['het fietspad', 'ciclovia'], ['de snelweg', 'autoestrada'], ['de rijstrook', 'faixa de rodagem'],
+    ['het verkeersbord', 'sinal de trânsito', '🪧'], ['de lantaarnpaal', 'poste de iluminação'], ['de rotonde', 'rotunda'],
+    ['de kruising', 'cruzamento'], ['de brug', 'ponte', '🌉'], ['het plein', 'praça'],
+    ['het park', 'parque', '🌳'], ['het centrum', 'centro'], ['de buurt', 'bairro'],
+    ['het dorp', 'aldeia'], ['de markt', 'mercado'], ['de bakkerij', 'padaria', '🥐'],
+    ['de slagerij', 'talho'], ['de bank', 'banco', '🏦'], ['het postkantoor', 'correios', '🏤'],
+    ['het station', 'estação', '🚉'], ['de bushalte', 'paragem de autocarro', '🚏'], ['het gemeentehuis', 'câmara municipal'],
+    ['de school', 'escola', '🏫'], ['de kerk', 'igreja', '⛪'], ['het museum', 'museu'],
+    ['de bibliotheek', 'biblioteca'], ['het restaurant', 'restaurante'], ['het café', 'café (bar)'],
+    ['het hotel', 'hotel', '🏨'], ['de parkeerplaats', 'parque de estacionamento', '🅿️'], ['de fietsenstalling', 'parque de bicicletas'],
+    ['de prijs', 'preço', '💰'], ['de korting', 'desconto'], ['de kassa', 'caixa (da loja)'],
+    ['het bonnetje', 'recibo'], ['de pinpas', 'cartão multibanco', '💳'], ['contant', 'em dinheiro'],
+    ['het winkelwagentje', 'carrinho de compras', '🛒'], ['de openingstijden', 'horário de abertura'],
+  ]},
+  { id: 'natuur', pt: 'Mundo e natureza', nl: 'Natuur', icon: '🌍', img: true, words: [
+    ['de boom', 'árvore', '🌳'], ['de bloem', 'flor', '🌸'], ['de zee', 'mar', '🌊'],
+    ['de rivier', 'rio'], ['de berg', 'montanha', '⛰️'], ['het bos', 'floresta', '🌲'],
+    ['het strand', 'praia', '🏖️'], ['het gras', 'relva'], ['het blad', 'folha', '🍁'],
+    ['de struik', 'arbusto'], ['de lucht', 'céu'], ['de zon', 'sol', '☀️'],
+    ['de maan', 'lua', '🌙'], ['de ster', 'estrela', '🌟'], ['de aarde', 'Terra', '🌍'],
+    ['de wereld', 'mundo'], ['het meer', 'lago'], ['de oceaan', 'oceano'],
+    ['de beek', 'ribeiro'], ['het eiland', 'ilha', '🏝️'], ['het dal', 'vale'],
+    ['de heuvel', 'colina'], ['de woestijn', 'deserto', '🏜️'], ['de jungle', 'selva', '🌴'],
+    ['het moeras', 'pântano'], ['het struikgewas', 'mato'], ['de heide', 'charneca'],
+    ['de grot', 'gruta'], ['de waterval', 'cascata'], ['de golf', 'onda'],
+    ['de steen', 'pedra', '🪨'], ['het zand', 'areia'], ['de grond', 'solo'],
+    ['het hout', 'madeira', '🪵'], ['het vuur', 'fogo', '🔥'], ['het veld', 'campo'],
+    ['het dier', 'animal'], ['de natuur', 'natureza'], ['de dijk', 'dique'],
+    ['de polder', 'pólder'], ['de molen', 'moinho'], ['de tulp', 'tulipa', '🌷'],
+  ]},
+  { id: 'sport', pt: 'Desportos', nl: 'Sport', icon: '⚽', img: true, words: [
+    ['het voetbal', 'futebol', '⚽'], ['het zwemmen', 'natação', '🏊'], ['het hardlopen', 'corrida', '🏃'],
+    ['het wielrennen', 'ciclismo', '🚴'], ['het schaatsen', 'patinagem no gelo', '⛸️'], ['de sport', 'desporto'],
+    ['de gymnastiek', 'ginástica', '🤸'], ['het rolschaatsen', 'patinagem', '🛼'], ['het tennis', 'ténis', '🎾'],
+    ['het basketbal', 'basquetebol', '🏀'], ['het volleybal', 'voleibol', '🏐'], ['het hockey', 'hóquei', '🏑'],
+    ['het handbal', 'andebol', '🤾'], ['het honkbal', 'basebol', '⚾'], ['het golf', 'golfe', '⛳'],
+    ['het skiën', 'esqui', '⛷️'], ['het boksen', 'boxe', '🥊'], ['het judo', 'judo', '🥋'],
+    ['het paardrijden', 'equitação', '🏇'], ['het zeilen', 'vela', '⛵'], ['het roeien', 'remo', '🚣'],
+    ['het wandelen', 'caminhada', '🥾'], ['het schaken', 'xadrez', '♟️'], ['de yoga', 'ioga', '🧘'],
+    ['de fitness', 'musculação', '🏋️'], ['de wedstrijd', 'jogo / competição'], ['het team', 'equipa'],
+    ['de speler', 'jogador'], ['de scheidsrechter', 'árbitro'], ['het doelpunt', 'golo', '🥅'],
+    ['de bal', 'bola'], ['winnen', 'ganhar', '🏆'], ['verliezen', 'perder'],
+    ['de training', 'treino'], ['het stadion', 'estádio', '🏟️'], ['de medaille', 'medalha', '🏅'],
+    ['het zwembad', 'piscina'], ['de sportschool', 'ginásio'],
+  ]},
+  { id: 'vraagwoorden', pt: 'Perguntas e ligações', nl: 'Vraagwoorden en verbindingswoorden', icon: '❓', img: false, words: [
+    ['wie', 'quem'], ['wat', 'o quê'], ['waar', 'onde'], ['wanneer', 'quando'], ['waarom', 'porquê'], ['hoe', 'como'],
+    ['hoeveel', 'quanto'], ['welke', 'qual'], ['hoe laat', 'a que horas'], ['waarheen', 'para onde'],
+    ['waarvandaan', 'de onde'], ['hoelang', 'quanto tempo'],
+    ['ja', 'sim'], ['nee', 'não'], ['niet', 'não (negação)'], ['geen', 'nenhum'], ['ook', 'também'],
+    ['misschien', 'talvez'], ['alsjeblieft', 'por favor'], ['dank je', 'obrigado'], ['sorry', 'desculpa'], ['graag', 'com gosto'],
+    ['en', 'e'], ['of', 'ou'], ['maar', 'mas'], ['omdat', 'porque'], ['want', 'pois'], ['dus', 'portanto'],
+    ['dan', 'então / depois'], ['als', 'se'], ['toen', 'quando (no passado)'], ['terwijl', 'enquanto'],
+    ['nu', 'agora'], ['hier', 'aqui'], ['daar', 'ali'], ['nog', 'ainda'], ['al', 'já'],
+    ['altijd', 'sempre'], ['nooit', 'nunca'], ['soms', 'às vezes'], ['vaak', 'muitas vezes'],
+    ['straks', 'daqui a pouco'], ['later', 'mais tarde'], ['vroeger', 'antigamente'], ['weer', 'outra vez'],
+    ['veel', 'muito (quantidade)'], ['weinig', 'pouco'], ['heel', 'muito (grau)'], ['te', 'demasiado'], ['genoeg', 'suficiente'],
+    ['samen', 'juntos'], ['alleen', 'sozinho'], ['ergens', 'algures'], ['nergens', 'em lado nenhum'], ['overal', 'em todo o lado'],
+  ]},
+  { id: 'vervoer', pt: 'Transportes', nl: 'Vervoer', icon: '🚲', img: true, words: [
+    ['de auto', 'carro', '🚗'], ['de fiets', 'bicicleta', '🚲'], ['de bus', 'autocarro', '🚌'],
+    ['de trein', 'comboio', '🚆'], ['het vliegtuig', 'avião', '✈️'], ['de tram', 'elétrico', '🚊'],
+    ['de boot', 'barco', '⛵'], ['de taxi', 'táxi', '🚕'], ['de motor', 'mota', '🏍️'],
+    ['de metro', 'metro', '🚇'], ['de vrachtwagen', 'camião', '🚛'], ['de scooter', 'scooter', '🛵'],
+    ['het schip', 'navio', '🚢'], ['de veerboot', 'ferry', '⛴️'], ['de step', 'trotinete', '🛴'],
+    ['het kaartje', 'bilhete', '🎫'], ['de OV-chipkaart', 'cartão de transportes'], ['het perron', 'plataforma'],
+    ['het vertrek', 'partida'], ['de aankomst', 'chegada'], ['de vertraging', 'atraso'],
+    ['de bestuurder', 'condutor'], ['de passagier', 'passageiro'], ['de reis', 'viagem'],
+    ['de bagage', 'bagagem', '🧳'], ['het vliegveld', 'aeroporto', '🛫'], ['het rijbewijs', 'carta de condução'],
+    ['de benzine', 'gasolina', '⛽'], ['het tankstation', 'bomba de gasolina'], ['de fietsbel', 'campainha da bicicleta', '🔔'],
+    ['de helm', 'capacete', '⛑️'], ['de file', 'engarrafamento'], ['het verkeer', 'trânsito'],
+  ]},
+];
+
+// "Tudo misturado": tópico à parte (⭐ e palavras difíceis próprios), usa as palavras já desbloqueadas dos outros tópicos
+const MIX = { id: 'mix', pt: 'Tudo misturado', nl: 'Alles door elkaar', icon: '🎲', img: true };
+
+// Secções do ecrã inicial
+const SECTIONS = [
+  { title: 'Básico', ids: ['getallen', 'kleuren', 'tijd', 'voornaamwoorden', 'vraagwoorden', 'werkwoorden'] },
+  { title: 'Pessoas', ids: ['familie', 'lichaam', 'gezondheid', 'beroepen', 'kleding', 'bijvoeglijk'] },
+  { title: 'Em casa', ids: ['huis', 'objecten', 'groenten', 'fruit', 'eten'] },
+  { title: 'Lá fora', ids: ['stad', 'vervoer', 'natuur', 'weer', 'dieren', 'sport'] },
+];
+
+const ALL = TOPICS.flatMap(t => t.words.map(([nl, pt, img, art]) => ({ nl, pt, img: img || undefined, art, topic: t })));
+TOPICS.forEach(t => { t.all = ALL.filter(w => w.topic === t); });
+
+// ============ SUBGRUPOS ============
+// Cada tópico está dividido em grupos pequenos (à volta de 6 palavras, nunca mais de 10) por categoria.
+// Aprende-se grupo a grupo: 15 acertos seguidos num grupo desbloqueiam-no para o modo "todo o tópico".
+const GROUPS = {
+  groenten: [
+    ['Básicos', ['de aardappel', 'de tomaat', 'de ui', 'de wortel', 'de sla', 'de komkommer']],
+    ['Da horta 1', ['de paprika', 'de knoflook', 'de champignon', 'de broccoli', 'de bloemkool', 'de spinazie']],
+    ['Da horta 2', ['de prei', 'de courgette', 'de kool', 'de rode kool', 'de aubergine', 'de pompoen']],
+    ['Leguminosas e grãos', ['de bonen', 'de erwten', 'de maïs', 'de linzen', 'de kikkererwten', 'de sperziebonen']],
+    ['Raízes', ['de zoete aardappel', 'de biet', 'de raap', 'de radijs', 'de selderij', 'de asperge']],
+    ['Folhas e outros', ['de witlof', 'de andijvie', 'de rucola', 'de venkel', 'de artisjok', 'de sjalot']],
+    ['Picantes e mais', ['de peper', 'de spruitjes', 'de gember', 'de olijf']],
+  ],
+  fruit: [
+    ['Do dia a dia', ['de appel', 'de banaan', 'de sinaasappel', 'de peer', 'de aardbei', 'de druif']],
+    ['Citrinos', ['de citroen', 'de limoen', 'de mandarijn', 'de clementine', 'de grapefruit']],
+    ['De verão', ['de kers', 'de watermeloen', 'de meloen', 'de perzik', 'de abrikoos', 'de pruim', 'de nectarine']],
+    ['Tropicais', ['de ananas', 'de kiwi', 'de mango', 'de avocado', 'de kokosnoot', 'de papaja', 'de passievrucht']],
+    ['Bagas', ['de bosbes', 'de framboos', 'de braam', 'de rode bes', 'de cranberry']],
+    ['Figos e secos', ['de vijg', 'de granaatappel', 'de dadel', 'de rozijn', 'de kweepeer']],
+    ['Exóticas', ['de lychee', 'de guave', 'de persimoen', 'de sterfruit', 'de drakenvrucht']],
+  ],
+  dieren: [
+    ['Em casa', ['de hond', 'de kat', 'de vogel', 'de vis', 'de muis', 'het konijn']],
+    ['Na quinta', ['het paard', 'de koe', 'het varken', 'de kip', 'de haan', 'het schaap', 'de geit', 'de eend']],
+    ['Pequenos', ['de vlinder', 'de bij', 'de mier', 'de spin', 'de slak', 'de kikker']],
+    ['Na floresta', ['de beer', 'de wolf', 'de vos', 'het hert', 'de eekhoorn', 'de uil', 'de slang']],
+    ['Selvagens', ['de olifant', 'de leeuw', 'de aap', 'de tijger', 'de giraf', 'de zebra', 'de kameel']],
+    ['Na água e répteis', ['de krokodil', 'de schildpad', 'de pinguïn', 'de walvis', 'de dolfijn', 'de haai']],
+  ],
+  tijd: [
+    ['Dias da semana', ['maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag', 'zondag']],
+    ['Hoje e amanhã', ['vandaag', 'morgen', 'gisteren', 'het weekend', 'de dag', 'de week']],
+    ['Meses 1', ['januari', 'februari', 'maart', 'april', 'mei', 'juni']],
+    ['Meses 2', ['juli', 'augustus', 'september', 'oktober', 'november', 'december']],
+    ['Horas e anos', ['het uur', 'de minuut', 'de seconde', 'de maand', 'het jaar']],
+    ['Períodos longos', ['het kwartaal', 'het semester', 'het decennium', 'de eeuw', 'het millennium']],
+  ],
+  getallen: [
+    ['1 a 6', ['één', 'twee', 'drie', 'vier', 'vijf', 'zes']],
+    ['0 e 7 a 12', ['nul', 'zeven', 'acht', 'negen', 'tien', 'elf', 'twaalf']],
+    ['13 a 20', ['dertien', 'veertien', 'vijftien', 'zestien', 'zeventien', 'achttien', 'negentien', 'twintig']],
+    ['Dezenas', ['dertig', 'veertig', 'vijftig', 'zestig', 'zeventig', 'tachtig', 'negentig']],
+    ['Grandes', ['honderd', 'duizend', 'tienduizend', 'honderdduizend', 'een miljoen']],
+  ],
+  kleuren: [
+    ['Principais', ['rood', 'blauw', 'geel', 'groen', 'zwart', 'wit']],
+    ['Mais cores', ['oranje', 'roze', 'paars', 'bruin', 'grijs']],
+    ['Tons e metais', ['licht', 'donker', 'lichtblauw', 'donkerblauw', 'goud', 'zilver']],
+    ['Especiais', ['beige', 'turquoise', 'lila', 'bordeaux']],
+  ],
+  familie: [
+    ['Mais perto', ['de vader', 'de moeder', 'de broer', 'de zus', 'het kind', 'de baby']],
+    ['Filhos e avós', ['de zoon', 'de dochter', 'de opa', 'de oma', 'de ouders', 'de grootouders']],
+    ['Tios, primos e netos', ['de oom', 'de tante', 'de neef', 'de nicht', 'de kleinzoon', 'de kleindochter']],
+    ['Casal e sogros', ['de man', 'de vrouw', 'de schoonvader', 'de schoonmoeder', 'de schoonzoon', 'de schoondochter']],
+    ['Cunhados e padrastos', ['de zwager', 'de schoonzus', 'de stiefvader', 'de stiefmoeder', 'de tweeling']],
+    ['Padrinhos', ['de peetvader', 'de peetmoeder', 'de peetzoon', 'de peetdochter']],
+  ],
+  lichaam: [
+    ['Cara', ['het oog', 'de mond', 'de neus', 'het oor', 'het hoofd', 'het haar']],
+    ['Cara 2', ['de tand', 'de tong', 'de lip', 'de wenkbrauw', 'de baard', 'de nek']],
+    ['Braços e mãos', ['de hand', 'de arm', 'de vinger', 'de schouder', 'de elleboog', 'de pols', 'de nagel']],
+    ['Pernas e pés', ['de voet', 'het been', 'de knie', 'de teen', 'de enkel', 'de heup']],
+    ['Tronco', ['de buik', 'de rug', 'de borst', 'de huid', 'de maag']],
+    ['Por dentro', ['het hart', 'de hersenen', 'het bot', 'de spier']],
+  ],
+  gezondheid: [
+    ['Onde ir', ['de huisarts', 'het ziekenhuis', 'de apotheek', 'de afspraak', 'de spoedeisende hulp', 'de ambulance']],
+    ['Remédios', ['het medicijn', 'de pil', 'het recept', 'de zalf', 'de injectie', 'het vaccin']],
+    ['Dores', ['de pijn', 'de hoofdpijn', 'de buikpijn', 'de keelpijn', 'de koorts', 'de ziekte']],
+    ['Constipações', ['de verkoudheid', 'de griep', 'de hoest', 'niezen', 'misselijk', 'duizelig']],
+    ['Feridas', ['de wond', 'de pleister', 'het verband', 'het bloed', 'de brandwond', 'het gips']],
+    ['Doenças', ['de allergie', 'de diabetes', 'de kanker', 'het virus', 'de bloeddruk', 'het gewicht']],
+    ['Gravidez e outros', ['de zwangerschap', 'zwanger', 'de zorgverzekering', 'de operatie', 'de thermometer', 'de rolstoel']],
+  ],
+  stad: [
+    ['Na rua', ['de straat', 'de stad', 'de weg', 'de stoep', 'het dorp', 'het plein']],
+    ['Trânsito', ['het stoplicht', 'het zebrapad', 'het fietspad', 'de snelweg', 'de rijstrook', 'het verkeersbord', 'de lantaarnpaal']],
+    ['Cruzamentos e bairro', ['de rotonde', 'de kruising', 'de brug', 'het park', 'het centrum', 'de buurt']],
+    ['Lojas', ['de winkel', 'de supermarkt', 'de markt', 'de bakkerij', 'de slagerij', 'het winkelwagentje']],
+    ['Serviços', ['de bank', 'het postkantoor', 'het station', 'de bushalte', 'het gemeentehuis', 'de parkeerplaats', 'de fietsenstalling']],
+    ['Edifícios', ['de school', 'de kerk', 'het museum', 'de bibliotheek', 'het restaurant', 'het café', 'het hotel']],
+    ['Pagar', ['het geld', 'de prijs', 'de korting', 'de kassa', 'het bonnetje', 'de pinpas', 'contant', 'de openingstijden']],
+  ],
+  natuur: [
+    ['Plantas', ['de boom', 'de bloem', 'de struik', 'het gras', 'het blad', 'de tulp']],
+    ['Paisagens', ['het bos', 'de jungle', 'het moeras', 'het struikgewas', 'de heide', 'het veld']],
+    ['Água', ['de zee', 'de oceaan', 'de rivier', 'het meer', 'de beek', 'de waterval', 'de golf']],
+    ['Relevo', ['de berg', 'het dal', 'de heuvel', 'het eiland', 'de woestijn', 'de grot', 'het strand']],
+    ['Céu', ['de lucht', 'de zon', 'de maan', 'de ster', 'de aarde', 'de wereld']],
+    ['Elementos', ['de steen', 'het zand', 'de grond', 'het hout', 'het vuur', 'de natuur']],
+    ['Holanda', ['de dijk', 'de polder', 'de molen', 'het dier']],
+  ],
+  sport: [
+    ['Populares', ['het voetbal', 'het zwemmen', 'het hardlopen', 'het wielrennen', 'het schaatsen', 'de sport']],
+    ['Com bola', ['het tennis', 'het basketbal', 'het volleybal', 'het hockey', 'het handbal', 'het honkbal', 'het golf']],
+    ['Individuais', ['de gymnastiek', 'het rolschaatsen', 'het skiën', 'het boksen', 'het judo', 'het paardrijden']],
+    ['Ao ar livre e calma', ['het zeilen', 'het roeien', 'het wandelen', 'het schaken', 'de yoga', 'de fitness']],
+    ['No jogo', ['de wedstrijd', 'het team', 'de speler', 'de scheidsrechter', 'het doelpunt', 'de bal']],
+    ['Ganhar e treinar', ['winnen', 'verliezen', 'de training', 'het stadion', 'de medaille', 'het zwembad', 'de sportschool']],
+  ],
+  eten: [
+    ['Básicos', ['het water', 'het brood', 'de melk', 'de koffie', 'de kaas', 'het ei']],
+    ['Refeições', ['het ontbijt', 'de lunch', 'het avondeten', 'het tussendoortje', 'de maaltijd', 'de boterham']],
+    ['Bebidas', ['de thee', 'het sap', 'de frisdrank', 'het bier', 'de wijn']],
+    ['Carne e peixe', ['het vlees', 'de kip', 'het varkensvlees', 'het rundvlees', 'de zalm', 'de garnaal']],
+    ['Charcutaria e salgados', ['de worst', 'de ham', 'het spek', 'de kroket', 'het broodje', 'de pannenkoek']],
+    ['Pratos', ['de rijst', 'de pasta', 'de pizza', 'de patat', 'de hamburger', 'de aardappelpuree', 'de soep']],
+    ['Temperos', ['het zout', 'de suiker', 'de zwarte peper', 'de olijfolie', 'de azijn', 'de mosterd', 'de saus']],
+    ['Para barrar', ['de honing', 'de jam', 'de pindakaas', 'de hagelslag', 'de kaneel', 'het kruid']],
+    ['Doces', ['de chocolade', 'het snoep', 'het koekje', 'de taart', 'het gebak', 'de pudding', 'het ijs', 'de stroopwafel']],
+    ['Laticínios e cereais', ['de yoghurt', 'de room', 'de ontbijtgranen', 'de boter']],
+    ['Sabores', ['zoet', 'zuur', 'bitter', 'pittig', 'hartig']],
+  ],
+  kleding: [
+    ['Básico', ['het T-shirt', 'de broek', 'de schoenen', 'de jas', 'de sokken', 'de jurk']],
+    ['Acessórios', ['de pet', 'de sjaal', 'de handschoenen', 'de hoed', 'de muts', 'de zonnebril', 'de riem', 'de stropdas']],
+    ['Mais peças', ['de trui', 'het overhemd', 'de blouse', 'de rok', 'de spijkerbroek', 'het pak', 'de korte broek']],
+    ['Interior e noite', ['het ondergoed', 'de onderbroek', 'de bh', 'de pyjama', 'de badjas']],
+    ['Praia e calçado', ['het badpak', 'de zwembroek', 'de slippers', 'de sandalen', 'de sneakers', 'de laarzen']],
+    ['Partes da roupa', ['de kleding', 'de maat', 'de knoop', 'de rits', 'de zak', 'de mouw']],
+  ],
+  huis: [
+    ['Divisões', ['de keuken', 'de badkamer', 'de slaapkamer', 'de woonkamer', 'de eetkamer', 'de werkkamer']],
+    ['Estrutura', ['het huis', 'de deur', 'het raam', 'de muur', 'het dak', 'de vloer', 'het plafond']],
+    ['Mais divisões', ['de gang', 'de trap', 'het balkon', 'het terras', 'de garage', 'de zolder', 'de kelder']],
+    ['Onde se vive', ['de tuin', 'het appartement', 'het flatgebouw', 'het rijtjeshuis', 'de villa']],
+    ['Tipos de casa', ['de boerderij', 'de woonboot', 'de tent', 'de caravan', 'het kasteel', 'de hut']],
+  ],
+  objecten: [
+    ['Sala', ['de tafel', 'de stoel', 'de bank', 'de kast', 'de lamp', 'de televisie']],
+    ['Quarto', ['het bed', 'het kussen', 'de deken', 'de wekker', 'de klok', 'het gordijn']],
+    ['Mesa', ['het bord', 'het glas', 'het mes', 'de vork', 'de lepel', 'het bestek', 'het kopje']],
+    ['Cozinha', ['de pan', 'de koelkast', 'de oven', 'de magnetron', 'de vaatwasser', 'de waterkoker', 'de fles']],
+    ['Casa de banho', ['de douche', 'het bad', 'het toilet', 'de wastafel', 'de handdoek', 'de zeep']],
+    ['Higiene', ['de tandenborstel', 'de tandpasta', 'het toiletpapier', 'de spiegel', 'de kam', 'de haardroger']],
+    ['Escrever', ['de pen', 'het potlood', 'het papier', 'het boek', 'de schaar', 'het bureau']],
+    ['Tecnologia', ['de computer', 'de telefoon', 'de mobiele telefoon', 'de afstandsbediening', 'de wasmachine', 'de stofzuiger']],
+    ['Sair de casa', ['de sleutel', 'de tas', 'de portemonnee', 'de bril', 'de rugzak', 'de doos']],
+    ['Decoração e limpeza', ['de plant', 'het schilderij', 'de kaars', 'het tapijt', 'de vuilnisbak', 'de bezem', 'de emmer', 'de strijkbout']],
+  ],
+  weer: [
+    ['Tempo de hoje', ['de zon', 'de regen', 'de wind', 'warm', 'koud', 'het weer']],
+    ['Céu', ['de wolk', 'de sneeuw', 'bewolkt', 'zonnig', 'regenachtig', 'de bui']],
+    ['Estações', ['de lente', 'de zomer', 'de herfst', 'de winter', 'het seizoen', 'het klimaat']],
+    ['Tempestade', ['het onweer', 'de bliksem', 'de mist', 'de storm', 'de hagel', 'de vorst']],
+    ['Medir e ver', ['de temperatuur', 'de graden', 'de weersvoorspelling', 'de paraplu', 'de regenboog', 'de zonsopgang', 'de zonsondergang']],
+  ],
+  beroepen: [
+    ['Comuns', ['de dokter', 'de leraar', 'de politieagent', 'de kok', 'de verpleegkundige', 'de verkoper']],
+    ['No dia a dia', ['de student', 'de ober', 'de chauffeur', 'de bakker', 'de boer', 'de kapper']],
+    ['Saúde e segurança', ['de tandarts', 'de apotheker', 'de brandweerman', 'de dierenarts', 'de psycholoog', 'de beveiliger']],
+    ['Ofícios', ['de monteur', 'de schoonmaker', 'de bouwvakker', 'de timmerman', 'de loodgieter', 'de elektricien', 'de metselaar']],
+    ['Escritório', ['de programmeur', 'de advocaat', 'de ingenieur', 'de architect', 'de boekhouder', 'de secretaresse', 'de manager']],
+    ['Serviços', ['de postbode', 'de kassamedewerker', 'de directeur', 'de ondernemer', 'de ambtenaar', 'de vertaler']],
+    ['Artes e media', ['de schilder', 'de zanger', 'de muzikant', 'de acteur', 'de schrijver', 'de kunstenaar', 'de fotograaf', 'de journalist']],
+    ['Outros', ['de piloot', 'de rechter', 'de wetenschapper', 'de slager', 'de visser', 'de soldaat', 'de tuinman']],
+  ],
+  werkwoorden: [
+    ['Essenciais 1', ['zijn', 'hebben', 'gaan', 'komen', 'willen', 'kunnen']],
+    ['Essenciais 2', ['moeten', 'doen', 'maken', 'zeggen', 'zien', 'weten']],
+    ['Dia a dia', ['eten', 'drinken', 'slapen', 'werken', 'wonen', 'koken']],
+    ['Comunicar', ['praten', 'luisteren', 'lezen', 'schrijven', 'vragen', 'antwoorden', 'bellen']],
+    ['Mover-se', ['lopen', 'rennen', 'zwemmen', 'rijden', 'fietsen', 'zitten', 'staan', 'liggen']],
+    ['Comprar e dar', ['kopen', 'betalen', 'verkopen', 'nemen', 'geven', 'brengen']],
+    ['Pensar', ['leren', 'denken', 'begrijpen', 'kennen', 'zoeken', 'vinden', 'vergeten']],
+    ['Em casa', ['wassen', 'schoonmaken', 'openen', 'sluiten', 'beginnen', 'stoppen', 'wachten']],
+    ['Lazer e sentir', ['kijken', 'spelen', 'zingen', 'dansen', 'lachen', 'huilen', 'helpen', 'houden van']],
+  ],
+  bijvoeglijk: [
+    ['Básicos', ['goed', 'slecht', 'groot', 'klein', 'nieuw', 'oud', 'ander', 'leuk']],
+    ['Tamanho', ['lang', 'kort', 'hoog', 'laag', 'breed', 'smal']],
+    ['Pessoas', ['jong', 'mooi', 'lelijk', 'sterk', 'zwak', 'slim', 'dom']],
+    ['Sentir', ['blij', 'verdrietig', 'moe', 'ziek', 'gezond', 'bang', 'boos', 'gelukkig']],
+    ['Tempo e ritmo', ['vroeg', 'laat', 'snel', 'langzaam', 'druk', 'rustig']],
+    ['Dificuldade', ['moeilijk', 'makkelijk', 'belangrijk', 'mogelijk', 'nodig', 'duidelijk', 'zeker']],
+    ['Dinheiro e outros', ['duur', 'goedkoop', 'arm', 'rijk', 'vrij', 'bekend', 'echt', 'eigen']],
+    ['Estados', ['open', 'dicht', 'vol', 'leeg', 'nat', 'droog', 'schoon', 'vies']],
+    ['Textura', ['dik', 'dun', 'zacht', 'hard', 'zwaar', 'lekker']],
+  ],
+  voornaamwoorden: [
+    ['Eu, tu, ele', ['ik', 'jij', 'hij', 'zij (singular)', 'wij', 'jullie (sujeito)', 'zij (plural)', 'u']],
+    ['Meu, teu, dele', ['mijn', 'jouw', 'zijn', 'haar (posse)', 'onze', 'jullie (posse)', 'hun', 'uw']],
+    ['Me, te, o', ['mij', 'jou', 'hem', 'haar (objeto)', 'ons', 'hen']],
+    ['Isto e alguém', ['dit', 'dat', 'iemand', 'niemand', 'iets', 'niets']],
+    ['Tudo e todos', ['alles', 'iedereen', 'alle', 'hele', 'elk']],
+  ],
+  vraagwoorden: [
+    ['Perguntas', ['wie', 'wat', 'waar', 'wanneer', 'waarom', 'hoe']],
+    ['Mais perguntas', ['hoeveel', 'welke', 'hoe laat', 'waarheen', 'waarvandaan', 'hoelang']],
+    ['Sim e não', ['ja', 'nee', 'niet', 'geen', 'ook', 'misschien']],
+    ['Cortesia', ['alsjeblieft', 'dank je', 'sorry', 'graag']],
+    ['Ligações', ['en', 'of', 'maar', 'omdat', 'want', 'dus']],
+    ['Mais ligações', ['dan', 'als', 'toen', 'terwijl', 'nog', 'al']],
+    ['Frequência', ['altijd', 'nooit', 'soms', 'vaak', 'weer', 'nu']],
+    ['Onde e quando', ['hier', 'daar', 'straks', 'later', 'vroeger', 'ergens', 'nergens', 'overal']],
+    ['Quantidade', ['veel', 'weinig', 'heel', 'te', 'genoeg', 'samen', 'alleen']],
+  ],
+  vervoer: [
+    ['Veículos', ['de auto', 'de fiets', 'de bus', 'de trein', 'het vliegtuig', 'de tram']],
+    ['Mais veículos', ['de boot', 'de taxi', 'de motor', 'de metro', 'de vrachtwagen', 'de scooter']],
+    ['Água, trotinete e segurança', ['het schip', 'de veerboot', 'de step', 'de helm', 'de fietsbel']],
+    ['Bilhetes', ['het kaartje', 'de OV-chipkaart', 'het perron', 'het vertrek', 'de aankomst', 'de vertraging']],
+    ['Viajar', ['de bestuurder', 'de passagier', 'de reis', 'de bagage', 'het vliegveld', 'het rijbewijs']],
+    ['Na estrada', ['de benzine', 'het tankstation', 'de file', 'het verkeer']],
+  ],
+};
+// Um só treino de palavras: cada pergunta é ao calhas neerlandês → português (A) ou português → neerlandês (B)
+const MODES = {
+  AB: { badge: '🔤', title: 'Treinar palavras' },
+  C: { badge: '<span class="art art-de">de</span><span class="art art-het">het</span>', title: 'De of het?' },
+};
+// Só as palavras com artigo entram no exercício C (o artigo pode vir na palavra ou no 4.º campo)
+const artOf = w => w.art || articleOf(spoken(w.nl));
+const hasArticle = w => !!artOf(w);
+const fullNl = w => w.art ? `${w.art} ${w.nl}` : w.nl;      // com o artigo à frente, para o de/het
+const nounOf = nl => spoken(nl).replace(/^(de|het) /, '');
+
+// ============ UTILITÁRIOS ============
+const $app = document.getElementById('app');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const shuffle = arr => { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+// localStorage pode falhar (navegação privada, etc.), a app tem de funcionar na mesma
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('woordjes:' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('woordjes:' + k, JSON.stringify(v)); } catch (e) {} },
+};
+
+const settings = Object.assign({ autoSpeak: true, sounds: true }, store.get('settings-v2', {}));
+const saveSettings = () => store.set('settings-v2', settings);
+
+// Comparação ao escrever: ignora maiúsculas, acentos (één = een), hífenes e espaços a mais
+const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[-‐]/g, '').replace(/\s+/g, ' ').trim();
+const stripArt = s => s.replace(/^(de|het|een) /, '');
+const articleOf = s => (s.match(/^(de|het) /) || [])[1] || null;
+
+// Palavra "falada" sem a pista entre parênteses: é o que se ouve e o que se escreve
+const spoken = nl => nl.replace(/\s*\(.*?\)\s*/g, ' ').trim();
+
+// Artigo com cor (de = azul, het = laranja) e pista em pequeno
+function nlHtml(nl) {
+  let base = nl, hint = '';
+  const hm = nl.match(/^(.*?)\s*\((.*)\)$/);
+  if (hm) { base = hm[1]; hint = ` <small class="nl-hint">(${esc(hm[2])})</small>`; }
+  const m = base.match(/^(de|het) (.+)$/);
+  return (m ? `<span class="art art-${m[1]}">${m[1]}</span> ${esc(m[2])}` : esc(base)) + hint;
+}
+
+function imgHtml(img) {
+  if (!img) return '';
+  if (img.startsWith('#')) return `<span class="swatch" style="background:${img}"></span>`;
+  if (/^[\d ]+$/.test(img)) return `<span class="digit ${img.length > 4 ? 'long' : ''}">${img}</span>`;
+  return `<span class="emoji">${img}</span>`;
+}
+
+// ============ VOZ (Web Speech, voz nl-NL do próprio dispositivo) ============
+const hasSpeech = 'speechSynthesis' in window;
+let nlVoice = null, voicesLoaded = false;
+function loadVoices() {
+  if (!hasSpeech) return;
+  const v = speechSynthesis.getVoices();
+  if (!v.length) return;
+  voicesLoaded = true;
+  nlVoice = v.find(x => x.lang === 'nl-NL') || v.find(x => x.lang.toLowerCase().startsWith('nl')) || null;
+}
+if (hasSpeech) { loadVoices(); speechSynthesis.onvoiceschanged = () => { loadVoices(); if (state.screen === 'settings') render(); }; }
+
+// Cada speak() cancela o anterior; o "then" só corre se entretanto não se pediu outro som
+let speakId = 0;
+function speak(text, slow, then) {
+  if (!hasSpeech) return;
+  const id = ++speakId;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(spoken(text));
+  u.lang = 'nl-NL';
+  if (nlVoice) u.voice = nlVoice;
+  u.rate = slow ? 0.55 : 0.9;
+  if (then) u.onend = () => { if (id === speakId) setTimeout(then, 250); };
+  speechSynthesis.speak(u);
+}
+const stopSpeaking = () => { if (hasSpeech) { speakId++; speechSynthesis.cancel(); } };
+const speakBtns = text => `<button class="soft" data-act="speak" data-arg="${esc(text)}" aria-label="Ouvir">🔊 Ouvir</button><button class="soft" data-act="speakSlow" data-arg="${esc(text)}" aria-label="Ouvir devagar">🐢 Devagar</button>`;
+
+// ============ SONS (gerados no navegador, sem ficheiros) ============
+let audioCtx = null;
+function tone(freq, start, dur, type = 'sine', vol = 0.18) {
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(vol, audioCtx.currentTime + start);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + start + dur);
+  o.connect(g).connect(audioCtx.destination);
+  o.start(audioCtx.currentTime + start); o.stop(audioCtx.currentTime + start + dur);
+}
+// Tem de ser chamado dentro de um clique (regra do iPhone para áudio)
+function sfx(kind) {
+  if (!settings.sounds) return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    if (kind === 'ok') { tone(523, 0, 0.12); tone(659, 0.1, 0.18); }
+    if (kind === 'bad') { tone(180, 0, 0.25, 'square', 0.08); }
+    if (kind === 'levelup') { [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.12, 0.25)); tone(1047, 0.5, 0.5); }
+  } catch (e) {}
+}
+
+// ============ GRUPOS, CHAVES E PONTOS ============
+// Cada tópico começa com o 1.º grupo aberto. Os grupos abertos entram no modo "todo o tópico" e no "tudo misturado".
+// 15 acertos seguidos (sem pistas) num grupo dão uma chave 🗝️ (uma por grupo, uma vez só).
+// A chave gasta-se para abrir outro grupo do mesmo tópico, à escolha.
+// Um erro põe a sequência a zero; a sequência guarda-se entre rondas e cada grupo guarda a melhor sequência de sempre.
+// Por grupo, pela melhor sequência: sem texto aos 10, de/het aos 20, escrever aos 25.
+// Tópico completo = todos os grupos já deram a sua chave.
+// Acertos contam para sempre por competência: ⭐ opções em A/B · 🏷️ C (de/het) · 🔊 só som · ✍️ escrito
+const STREAK_GOAL = 15;
+const FEATURE_GOAL = { audio: 10, art: 20, hard: 25 };   // art = exercício de/het
+// As rondas são infinitas: acaba-se com o ✕ (ou quando a revisão dos erros termina)
+const ART = '🏷️';
+const SKILLS = [['star', '⭐'], ['art', ART], ['audio', '🔊'], ['write', '✍️']];
+const hits = (id, skill) => store.get(`hits:${id}:${skill}`, 0);
+const addHit = (id, skill) => store.set(`hits:${id}:${skill}`, hits(id, skill) + 1);
+const stars = id => hits(id, 'star');
+const skillOf = q => q.mode === 'C' ? 'art' : q.typing ? 'write' : q.audioOnly ? 'audio' : 'star';
+const iconOf = skill => SKILLS.find(([k]) => k === skill)[1];
+
+TOPICS.forEach(t => { t.groups = GROUPS[t.id].map(([name, nls], gi) => ({ name, words: nls.map(nl => { const w = t.all.find(x => x.nl === nl); w.gi = gi; return w; }) })); });
+
+const KEY = '🗝️';
+const streakOf = (t, gi) => store.get(`streak:${t.id}:${gi}`, 0);
+const bestOf = (t, gi) => store.get(`best:${t.id}:${gi}`, 0);
+const setStreak = (t, gi, n) => { store.set(`streak:${t.id}:${gi}`, n); if (n > bestOf(t, gi)) store.set(`best:${t.id}:${gi}`, n); };
+const isOpen = (t, gi) => gi === 0 || store.get(`open:${t.id}:${gi}`, false);
+const isKeyed = (t, gi) => store.get(`keyed:${t.id}:${gi}`, false);
+const keysOf = t => store.get(`keys:${t.id}`, 0);
+const seen = (t, gi) => store.get(`seen:${t.id}:${gi}`, false);
+const openCount = t => t.groups.filter((_, gi) => isOpen(t, gi)).length;
+const keyedCount = t => t.groups.filter((_, gi) => isKeyed(t, gi)).length;
+const topicComplete = t => keyedCount(t) === t.groups.length;
+const unlockedWords = t => t.groups.flatMap((g, gi) => isOpen(t, gi) ? g.words : []);
+
+// Modos avançados (hard = escrever no B; audio = sem texto) desbloqueiam-se grupo a grupo pela melhor sequência.
+// O interruptor é por tópico e aplica-se só às palavras dos grupos que já os desbloquearam.
+const FEATURES = ['hard', 'audio'];
+const wordHas = (w, f) => bestOf(w.topic, w.gi) >= FEATURE_GOAL[f];
+const wordsOfTopic = id => id === 'mix' ? TOPICS.flatMap(unlockedWords) : unlockedWords(topicById(id));
+const advancedUnlocked = (id, f) => wordsOfTopic(id).some(w => wordHas(w, f));
+const featureOn = (id, f) => advancedUnlocked(id, f) && store.get(f + ':' + id, false);
+// Pisca desde que desbloqueia até à primeira pergunta em que é usado
+const featureIsNew = (id, f) => advancedUnlocked(id, f) && !store.get(f + 'Used:' + id, false);
+const anyFeatureNew = id => FEATURES.some(f => featureIsNew(id, f));
+
+// ---- Palavras difíceis ----
+// Cada erro aumenta a frequência da palavra; 3 acertos seguidos depois disso e volta ao normal
+// Cada tópico tem a sua lista, o "Tudo misturado" também
+const diffKey = w => state.topicId === 'mix' ? w.topic.id + '|' + w.nl : w.nl;
+const diffOf = id => store.get('diff:' + id, {});
+function recordDiff(w, ok) {
+  const id = state.topicId, d = diffOf(id), k = diffKey(w);
+  let e = d[k] || { m: 0, h: 0 };
+  if (!ok) { e.m++; e.h = 0; }
+  else if (e.m > 0 && ++e.h >= 3) e = null;
+  if (e && e.m > 0) d[k] = e; else delete d[k];
+  store.set('diff:' + id, d);
+}
+
+// ============ ESTADO ============
+// scope: 'topic' (todas as palavras desbloqueadas) ou o índice de um grupo; no misturado é sempre 'topic'
+const state = { screen: 'home', topicId: null, scope: 'topic', mode: null, questions: [], i: 0, total: Infinity, queue: null, prev: null,
+  gained: 0, gainedBy: {}, missed: 0, hints: 0, round: null, showWords: false, intro: null, keyEarned: false };
+const topicById = id => id === 'mix' ? MIX : TOPICS.find(t => t.id === id);
+const curTopic = () => topicById(state.topicId);
+const inGroup = () => state.topicId !== 'mix' && state.scope !== 'topic';
+const curGroup = () => inGroup() ? curTopic().groups[state.scope] : null;
+
+// Palavras em jogo conforme o âmbito
+function scopeWords() {
+  if (state.topicId === 'mix') return TOPICS.flatMap(unlockedWords);
+  return inGroup() ? curGroup().words : unlockedWords(curTopic());
+}
+// De onde vêm as opções erradas para uma palavra
+function optionPool(w) {
+  if (inGroup()) return curGroup().words;
+  return unlockedWords(w.topic);
+}
+// Escolhe a próxima palavra: fila de revisão > sorteio com pesos (palavras difíceis saem mais)
+// Não há limite de repetições; só evito a mesma palavra duas vezes seguidas (senão a resposta era óbvia)
+function pickWord() {
+  if (state.queue) return state.queue.shift();
+  const fits = w => state.mode !== 'C' || (hasArticle(w) && wordHas(w, 'art'));
+  const d = diffOf(state.topicId);
+  const pool = scopeWords().filter(fits).map(w => [w, 1 + (d[diffKey(w)]?.m || 0)]);
+  const usable = pool.length > 1 ? pool.filter(([w]) => w !== state.prev) : pool;
+  let r = Math.random() * usable.reduce((s, [, n]) => s + n, 0);
+  for (const [w, n] of usable) { if ((r -= n) < 0) return w; }
+  return usable[usable.length - 1][0];
+}
+
+// Até 6 opções, as erradas totalmente ao calhas dentro do âmbito (sem pistas)
+// No B com escrita e sem texto ligados ao mesmo tempo, ganha a escrita
+function makeQuestion(w, mode) {
+  state.prev = w;
+  if (mode === 'AB') mode = Math.random() < 0.5 ? 'A' : 'B';
+  if (mode === 'C') return { w, mode, typing: false, audioOnly: false, options: ['de', 'het'], answered: false, correct: false, picked: null, note: '' };
+  // Nunca duas opções com o mesmo som ou a mesma tradução (zij / zij, haar / haar)
+  const sounds = new Set([spoken(w.nl)]), pts = new Set([w.pt]), pool = [];
+  for (const o of shuffle(optionPool(w))) {
+    if (sounds.has(spoken(o.nl)) || pts.has(o.pt)) continue;
+    sounds.add(spoken(o.nl)); pts.add(o.pt); pool.push(o);
+  }
+  const id = state.topicId;
+  const typing = mode === 'B' && featureOn(id, 'hard') && wordHas(w, 'hard');
+  const audioOnly = !typing && featureOn(id, 'audio') && wordHas(w, 'audio');
+  if (typing) store.set('hardUsed:' + id, true);
+  if (audioOnly) store.set('audioUsed:' + id, true);
+  return {
+    w, mode, typing, audioOnly,
+    options: shuffle([w, ...pool.slice(0, 5)]),
+    answered: false, correct: false, picked: null, note: '',
+  };
+}
+
+function startQuiz(mode, retryWords) {
+  state.mode = mode;
+  // Primeira vez num grupo: ver, ouvir e copiar as palavras antes da ronda
+  if (!retryWords && inGroup() && !seen(curTopic(), state.scope)) {
+    state.intro = { words: curGroup().words, ok: curGroup().words.map(() => false) };
+    state.screen = 'intro';
+    render();
+    return;
+  }
+  beginRound(mode, retryWords);
+}
+
+function beginRound(mode, retryWords) {
+  state.mode = mode;
+  if (inGroup()) store.set(`seen:${state.topicId}:${state.scope}`, true);
+  state.queue = retryWords ? shuffle(retryWords) : null;
+  // "Repetir os erros" usa só as palavras falhadas e acaba quando elas acabam
+  state.total = retryWords ? retryWords.length : Infinity;
+  state.prev = null;
+  state.gained = 0;
+  state.gainedBy = {};
+  state.missed = 0;
+  state.hints = 0;
+  state.round = null;
+  state.keyEarned = false;
+  state.questions = [makeQuestion(pickWord(), mode)];
+  state.i = 0;
+  state.screen = 'quiz';
+  render();
+}
+
+function answer(q, ok, picked, note) {
+  q.answered = true; q.correct = ok; q.picked = picked; q.note = note || '';
+  recordDiff(q.w, ok);
+  if (ok) {
+    const sk = skillOf(q);
+    addHit(state.topicId, sk);
+    state.gained++;
+    state.gainedBy[sk] = (state.gainedBy[sk] || 0) + 1;
+  } else state.missed++;
+  // Sequência do grupo: acerto sem pista soma, erro põe a zero, pista não conta para nenhum lado
+  // Ao chegar a 15 num grupo que ainda não deu chave: ganha-se uma chave (e a sequência continua a contar para a melhor)
+  if (inGroup()) {
+    const t = curTopic(), gi = state.scope;
+    if (!ok) setStreak(t, gi, 0);
+    else if (!q.hint) {
+      const n = streakOf(t, gi) + 1;
+      setStreak(t, gi, n);
+      if (n >= STREAK_GOAL && !isKeyed(t, gi)) {
+        store.set(`keyed:${t.id}:${gi}`, true);
+        store.set(`keys:${t.id}`, keysOf(t) + 1);
+        state.keyEarned = true;
+        q.keyNow = true;                    // dispara a animação da chave a cair
+      }
+    }
+  }
+  sfx(ok ? 'ok' : 'bad');
+  render();
+  if (q.keyNow) { sfx('levelup'); animateKey(); }
+  if (!settings.autoSpeak) return;
+  // B com opções: ouve-se a opção escolhida e, se errou, a certa a seguir; nos outros casos, a palavra certa
+  if (q.mode === 'B' && !q.typing && !ok) speak(q.options[picked].nl, false, () => speak(q.w.nl));
+  else if (q.mode === 'B' && !q.typing) speak(q.options[picked].nl);
+  else speak(q.mode === 'C' ? fullNl(q.w) : q.w.nl);
+}
+
+// Pista: primeiro os espaços, depois uma letra ao calhas de cada vez. O acerto com pista não conta para a sequência
+function giveHint() {
+  const q = state.questions[state.i];
+  if (q.answered) return;
+  const word = stripArt(spoken(q.w.nl));
+  if (!q.hint) q.hint = { shown: new Set() };
+  else {
+    const left = [...word].map((ch, i) => i).filter(i => word[i] !== ' ' && !q.hint.shown.has(i));
+    if (!left.length) return;
+    q.hint.shown.add(left[Math.floor(Math.random() * left.length)]);
+  }
+  state.hints++;
+  const typed = document.getElementById('typed')?.value || '';
+  render();
+  const input = document.getElementById('typed');
+  if (input) { input.value = typed; input.focus(); }
+}
+function hintHtml(q) {
+  const full = spoken(q.w.nl), art = articleOf(full), word = stripArt(full);
+  const letters = [...word].map((ch, i) => ch === ' ' ? ' ' : q.hint.shown.has(i) ? ch : '_').join(' ');
+  return `<div class="hint-box"><span class="art art-${art || ''}">${art || ''}</span> ${esc(letters)}</div>`;
+}
+
+// Errou a escrever: tem de copiar a resposta certa antes de avançar; a tentativa errada fica visível para comparar
+function checkCopy(input) {
+  const q = state.questions[state.i];
+  if (norm(input.value) === norm(spoken(q.w.nl)) || (stripArt(norm(input.value)) === stripArt(norm(spoken(q.w.nl))))) {
+    q.copied = true;
+    sfx('ok');
+    render();
+  }
+}
+
+function checkTyped() {
+  const q = state.questions[state.i];
+  const input = document.getElementById('typed');
+  const raw = input.value;
+  if (!raw.trim()) { input.focus(); return; }
+  const a = norm(raw), b = norm(spoken(q.w.nl));
+  let ok = a === b, note = '';
+  // Sem artigo também conta, mas avisa se o artigo escrito estiver errado
+  if (!ok && stripArt(a) === stripArt(b)) {
+    ok = true;
+    const art = articleOf(b), typedArt = articleOf(a);
+    if (art && typedArt && art !== typedArt) note = `Atenção ao artigo: é <b>${art}</b>, não ${typedArt}.`;
+    else if (art && !typedArt) note = `Com artigo: <b>${nlHtml(q.w.nl)}</b>.`;
+  }
+  answer(q, ok, raw, note);
+}
+
+// Chave a cair no meio do ecrã e a voar para o cabeçalho
+function animateKey() {
+  const badge = document.getElementById('keybadge');
+  if (!badge || !document.body.animate) return;
+  const el = document.createElement('div');
+  el.className = 'key-fly'; el.textContent = KEY;
+  document.body.appendChild(el);
+  const r = badge.getBoundingClientRect();
+  const dx = r.left + r.width / 2 - window.innerWidth / 2, dy = r.top + r.height / 2 - window.innerHeight * 0.42;
+  const anim = el.animate([
+    { transform: 'translate(-50%, -60vh) scale(2)', opacity: 0 },
+    { transform: 'translate(-50%, 0) scale(2)', opacity: 1, offset: .4, easing: 'cubic-bezier(.2, .9, .3, 1.3)' },
+    { transform: 'translate(-50%, 0) scale(2)', opacity: 1, offset: .62 },
+    { transform: `translate(calc(-50% + ${dx}px), ${dy}px) scale(.7)`, opacity: 1 },
+  ], { duration: 1500, easing: 'ease-in-out', fill: 'forwards' });
+  anim.onfinish = () => { el.remove(); badge.classList.add('pulse'); setTimeout(() => badge.classList.remove('pulse'), 700); };
+}
+
+function next() {
+  stopSpeaking();
+  const q = state.questions[state.i];
+  if (q.typing && q.answered && !q.correct && !q.copied) return;   // primeiro copiar a resposta certa
+  if (state.i < state.total - 1) {
+    state.questions.push(makeQuestion(pickWord(), state.mode));
+    state.i++;
+    render();
+  } else endRound();
+}
+
+// Fim da ronda (ou saída a meio): resultado, e celebração se se ganhou uma chave
+function endRound() {
+  if (state.screen !== 'quiz') return;
+  stopSpeaking();
+  state.round = { keyEarned: state.keyEarned };
+  state.screen = 'result';
+  render();
+}
+
+// ============ ECRÃS ============
+// Progresso do tópico: grupos que já deram chave, ⭐ e chaves por gastar
+function progressBar(t) {
+  const n = keyedCount(t), all = t.groups.length, done = n === all, keys = keysOf(t);
+  return `<span class="xp ${done ? 'done' : ''}">
+    <span class="xp-num"><span>${done ? 'Completo' : `${n} de ${all} ${KEY}`}</span><span>⭐ ${stars(t.id)}</span>${keys ? `<span class="keys">${keys} por usar</span>` : ''}</span>
+    ${done ? '' : `<span class="xp-bar"><span style="width:${100 * n / all}%"></span></span>`}
+  </span>`;
+}
+
+function renderHome() {
+  const tile = t => {
+    const isMix = t.id === 'mix';
+    return `<button class="tile" data-act="openTopic" data-arg="${t.id}">
+      <span class="ic" aria-hidden="true">${t.icon}</span>
+      <span class="pt">${esc(t.pt)}</span>
+      ${isMix ? `<span class="xp"><span class="xp-num"><span>⭐ ${stars('mix')}</span></span></span>` : progressBar(t)}
+      ${anyFeatureNew(t.id) ? '<span class="badge-new" title="Modo novo desbloqueado"></span>' : ''}
+    </button>`;
+  };
+  return `
+    <header class="brand"><h1 lang="nl">Woordjes</h1>
+      <button class="iconbtn gear" data-act="settings" aria-label="Definições">⚙️</button></header>
+    ${SECTIONS.map(sec => `<h2 class="section-title">${sec.title}</h2>
+      <div class="tiles">${sec.ids.map(id => tile(topicById(id))).join('')}</div>`).join('')}
+    <h2 class="section-title">Tudo</h2>
+    <div class="tiles">${tile(MIX)}</div>`;
+}
+
+// Definições gerais (valem para todos os tópicos)
+function renderSettings() {
+  const sw = (key, label, sub) => `
+    <div class="opt-row"><div>${label}${sub ? `<small>${sub}</small>` : ''}</div>
+    <button class="switch" role="switch" aria-checked="${settings[key]}" aria-label="${esc(label)}" data-act="toggle" data-arg="${key}"></button></div>`;
+  let voiceNote = '';
+  if (!hasSpeech) voiceNote = 'Este navegador não consegue ler palavras em voz alta, por isso não vai haver som.';
+  else if (voicesLoaded && !nlVoice) voiceNote = 'Não encontrei uma voz neerlandesa neste dispositivo. O som pode sair com sotaque errado; instala a voz "Nederlands" nas definições de idioma / texto para voz.';
+  return `
+    <div class="topbar"><button class="iconbtn" data-act="home" aria-label="Voltar">←</button><h2 class="bar-title">Definições</h2></div>
+    <div class="opts">
+      ${sw('autoSpeak', 'Ler a palavra depois de responder', 'Em todos os exercícios')}
+      ${sw('sounds', 'Sons de acerto, erro e chave', '')}
+    </div>
+    ${voiceNote ? `<div class="note">${voiceNote}</div>` : ''}
+    <p class="legend">Artigos: <span class="art art-de">de</span> aparece sempre a azul e <span class="art art-het">het</span> a laranja.</p>
+    <div class="note">Como funciona: cada tópico está dividido em grupos pequenos e começa com o primeiro aberto. Consegue ${STREAK_GOAL} acertos seguidos num grupo e ganhas uma chave ${KEY}, que abre outro grupo à tua escolha nesse tópico. Cada grupo dá uma chave uma só vez e guarda a tua melhor sequência: aos ${FEATURE_GOAL.audio} desbloqueia o modo sem texto 🎧, aos ${FEATURE_GOAL.art} o exercício de/het e aos ${FEATURE_GOAL.hard} o modo escrever ✍️, para as palavras desse grupo.</div>
+    <div class="note">🔒 quer dizer que essa opção ainda não foi desbloqueada nesse grupo. 🎧 Sem texto: a pergunta em neerlandês é só som e as opções em neerlandês são sons. ✍️ Escrever: português → neerlandês sem opções, com pistas letra a letra. Em "Todo o tópico" e no "Tudo misturado", cada opção aplica-se só às palavras dos grupos que já a desbloquearam.</div>
+    <div class="note">Pontos por competência: ⭐ respostas com opções, ${ART} artigos (de/het), 🔊 respostas só com som, ✍️ respostas escritas.</div>`;
+}
+
+function wordRow(w, tag, locked) {
+  return `<tr class="${locked ? 'locked-word' : ''}"><td>${imgHtml(w.img)}</td>
+    <td class="nlw" lang="nl">${nlHtml(w.nl)}${tag ? ` <span class="pill ${tag.cls || ''}">${tag.text}</span>` : ''}</td><td>${esc(w.pt)}</td>
+    <td class="spk"><button class="iconbtn" data-act="speak" data-arg="${esc(w.nl)}" aria-label="Ouvir ${esc(spoken(w.nl))}">🔊</button></td></tr>`;
+}
+
+function renderSetup() {
+  const t = curTopic();
+  const skills = `<div class="skills">${SKILLS.map(([k, icon]) => `<span class="pill">${icon} ${hits(t.id, k)}</span>`).join('')}</div>`;
+  const n = openCount(t), words = unlockedWords(t), keys = keysOf(t);
+
+  // Azulejos: todo o tópico + um por grupo. Grupos fechados abrem-se com uma chave
+  const tiles = `
+    <button class="gtile" data-act="openScope" data-arg="topic">
+      <span class="g-state">∑</span>
+      <span class="g-name">Todo o tópico</span>
+      <span class="g-info">${words.length} palavras, ${n === 1 ? '1 grupo aberto' : `${n} grupos abertos`}</span></button>
+    ${t.groups.map((g, gi) => {
+      const open = isOpen(t, gi), keyed = isKeyed(t, gi), s = streakOf(t, gi), b = bestOf(t, gi);
+      if (!open) return keys
+        ? `<button class="gtile locked can-open" data-act="openGroup" data-arg="${gi}">
+            <span class="g-state">🔒</span><span class="g-name">${esc(g.name)}</span>
+            <span class="g-info">${g.words.length} palavras</span><span class="g-cta">Abrir com ${KEY}</span></button>`
+        : `<div class="gtile locked"><span class="g-state">🔒</span><span class="g-name">${esc(g.name)}</span>
+            <span class="g-info">${g.words.length} palavras</span></div>`;
+      return `<button class="gtile ${keyed ? 'done' : ''}" data-act="openScope" data-arg="${gi}">
+        <span class="g-state">${keyed ? KEY : s ? `<span class="flame ${s >= b ? 'glow' : ''}">🔥</span> ${s}/${STREAK_GOAL}` : ''}</span>
+        <span class="g-name">${esc(g.name)}</span>
+        <span class="g-info">${g.words.length} palavras${b ? `, melhor 🔥 ${b}` : ''}${b >= FEATURE_GOAL.audio ? ' 🎧' : ''}${b >= FEATURE_GOAL.art && g.words.some(hasArticle) ? ' ' + ART : ''}${b >= FEATURE_GOAL.hard ? ' ✍️' : ''}</span></button>`;
+    }).join('')}`;
+
+  let list = '';
+  if (state.showWords) {
+    const d = diffOf(t.id);
+    list = `<div class="table-wrap"><table class="wordlist"><tbody>
+      ${t.groups.map((g, gi) => `<tr class="group-row"><td colspan="4">${esc(g.name)} ${isKeyed(t, gi) ? KEY : isOpen(t, gi) ? '' : '🔒'}</td></tr>
+        ${g.words.map(w => wordRow(w, d[w.nl] ? { text: 'a treinar', cls: 'hard' } : null, !isOpen(t, gi))).join('')}`).join('')}
+    </tbody></table></div>`;
+  }
+
+  return `
+    <div class="topbar"><button class="iconbtn" data-act="home" aria-label="Voltar">←</button></div>
+    <div class="topic-head"><span class="ic" aria-hidden="true">${t.icon}</span>
+      <div><h2>${esc(t.pt)}</h2><div class="nl" lang="nl">${esc(t.nl)}</div><div class="topic-xp">${progressBar(t)}</div>${skills}</div></div>
+    ${keys ? `<p class="keys-note">Tens ${keys} ${keys === 1 ? 'chave' : 'chaves'} ${KEY}. Toca num grupo fechado para o abrir.</p>` : ''}
+    <h3 class="sub-title">O que treinar</h3>
+    <div class="gtiles">${tiles}</div>
+    <button class="linkbtn" data-act="toggleWords">${state.showWords ? 'Esconder palavras' : 'Ver as palavras'}</button>
+    ${list}
+    <button class="linkbtn danger" data-act="resetTopic">Repor o progresso deste tópico</button>`;
+}
+
+// Ecrã de um grupo (ou de todo o tópico, ou do misturado): como treinar
+function renderGroup() {
+  const t = curTopic(), isMix = t.id === 'mix', g = curGroup();
+  const inPlay = scopeWords();
+
+  // Interruptores compactos dentro do cartão "Treinar palavras": 🎧 e ✍️, ou 🔒 se ainda não desbloqueados
+  const featSwitch = (f, icon) => {
+    const ready = inPlay.filter(w => wordHas(w, f)).length;
+    if (!advancedUnlocked(t.id, f) || !ready) return `<span class="mode-opt locked" aria-label="${icon} bloqueado">${icon} <span class="lock">🔒</span></span>`;
+    return `<span class="mode-opt">${icon} <button class="switch small ${featureIsNew(t.id, f) ? 'blink' : ''}" role="switch" aria-checked="${featureOn(t.id, f)}" aria-label="${icon}" data-act="toggleFeature" data-arg="${f}"></button></span>`;
+  };
+
+  let head;
+  if (isMix) head = `<h2>${esc(t.pt)}</h2><div class="nl">${inPlay.length} palavras abertas em todos os tópicos</div>
+    <div class="skills">${SKILLS.map(([k, icon]) => `<span class="pill">${icon} ${hits(t.id, k)}</span>`).join('')}</div>`;
+  else if (g) {
+    const s = streakOf(t, state.scope), b = bestOf(t, state.scope), keyed = isKeyed(t, state.scope);
+    head = `<h2>${esc(g.name)}</h2><div class="nl">${esc(t.pt)}, ${g.words.length} palavras</div>
+      <div class="streak-line"><span class="flame ${s > 0 && s >= b ? 'glow' : ''}">🔥</span> Sequência ${s}${keyed ? `, melhor ${b} ${KEY}` : `/${STREAK_GOAL}${b ? `, melhor ${b}` : ''}`}</div>`;
+  } else head = `<h2>Todo o tópico</h2><div class="nl">${esc(t.pt)}, ${inPlay.length} palavras dos grupos abertos</div>`;
+
+  // Lista das palavras do grupo, para rever antes de treinar
+  const list = g ? `<div class="table-wrap group-words"><table class="wordlist"><tbody>${g.words.map(w => wordRow(w)).join('')}</tbody></table></div>` : '';
+
+  return `
+    <div class="topbar"><button class="iconbtn" data-act="${isMix ? 'home' : 'backToTopic'}" aria-label="Voltar">←</button></div>
+    <div class="topic-head"><span class="ic" aria-hidden="true">${t.icon}</span><div>${head}</div></div>
+    <h3 class="sub-title">Como treinar</h3>
+    <div class="modes">
+      ${Object.entries(MODES).map(([k, m]) => {
+        if (!inPlay.length) return `<div class="mode locked"><span class="letter">${m.badge}</span><div><b>${m.title}</b><span>Sem palavras para treinar aqui</span></div></div>`;
+        // De/het só onde há palavras com artigo (verbos, adjetivos, números não têm) e só a partir da sequência de 20
+        if (k === 'C') {
+          if (!inPlay.some(hasArticle)) return '';
+          if (!inPlay.some(w => hasArticle(w) && wordHas(w, 'art'))) return `<div class="mode locked"><span class="letter">${m.badge}</span>
+            <div><b>${m.title}</b></div><span class="lock">🔒</span></div>`;
+        }
+        // Os modos sem texto e escrever só dizem respeito ao treino de palavras: ficam dentro desse cartão
+        const opts = k === 'AB' ? `<div class="mode-opts">${featSwitch('audio', '🎧')}${featSwitch('hard', '✍️')}</div>` : '';
+        return `<div class="mode"><button class="mode-main" data-act="start" data-arg="${k}"><span class="letter">${m.badge}</span>
+          <div><b>${m.title}</b></div></button>${opts}</div>`;
+      }).join('')}
+    </div>
+    ${list}`;
+}
+
+// Azulejos a cair quando se desbloqueia um grupo
+function confetti() {
+  const colors = ['var(--primary)', 'var(--accent)', 'var(--primary-soft)', 'var(--accent-soft)'];
+  return `<div class="confetti" aria-hidden="true">${Array.from({ length: 36 }, (_, i) =>
+    `<i style="left:${Math.random() * 100}%;animation-delay:${Math.random() * 1.2}s;animation-duration:${2.2 + Math.random() * 1.5}s;background:${colors[i % 4]};transform:rotate(${Math.random() * 360}deg)"></i>`).join('')}</div>`;
+}
+
+// Palavras novas de um grupo: ver, ouvir e copiar em neerlandês antes da primeira ronda
+function renderIntro() {
+  const it = state.intro, allOk = it.ok.every(Boolean);
+  return `
+    <div class="topbar"><button class="iconbtn" data-act="backToGroup" aria-label="Voltar">←</button><h2 class="bar-title">${esc(curGroup().name)}</h2></div>
+    <p class="intro-text">Grupo novo. Lê, ouve e copia cada palavra em neerlandês. Depois começa a ronda.</p>
+    <div class="intro-list">${it.words.map((w, i) => `
+      <div class="card intro-card ${it.ok[i] ? 'ok' : ''}">
+        <div class="intro-top">${w.img ? `<span class="intro-img">${imgHtml(w.img)}</span>` : ''}
+          <div class="intro-words"><div class="intro-nl" lang="nl">${nlHtml(w.nl)}</div><div class="intro-pt">${esc(w.pt)}</div></div>
+          <button class="iconbtn" data-act="speak" data-arg="${esc(w.nl)}" aria-label="Ouvir">🔊</button></div>
+        <div class="typing"><input class="intro-input" data-idx="${i}" lang="nl" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
+          placeholder="Copia aqui" ${it.ok[i] ? 'value="' + esc(spoken(w.nl)) + '" readonly' : ''}>
+          <span class="check" aria-hidden="true">${it.ok[i] ? '✓' : ''}</span></div>
+      </div>`).join('')}</div>
+    <div class="actions"><button class="primary" data-act="beginRound" ${allOk ? '' : 'disabled'}>${allOk ? 'Começar a ronda' : 'Copia todas as palavras'}</button></div>`;
+}
+function checkIntro(input) {
+  const i = Number(input.dataset.idx), w = state.intro.words[i];
+  if (norm(input.value) === norm(spoken(w.nl))) {
+    state.intro.ok[i] = true;
+    sfx('ok');
+    render();
+    document.querySelector('.intro-input:not([readonly])')?.focus();
+  }
+}
+
+function renderQuiz() {
+  const q = state.questions[state.i];
+  const n = state.total;
+  const w = q.w;
+  let prompt = '';
+  if (q.mode === 'C') prompt = `${w.img ? `<div class="prompt-img">${imgHtml(w.img)}</div>` : ''}
+    <div class="prompt-word" lang="nl">${q.answered ? nlHtml(fullNl(w)) : esc(nounOf(fullNl(w)))}</div>
+    <p class="hint">${esc(w.pt)}. De of het?</p>`;
+  else if (q.mode === 'A' && q.audioOnly) prompt = `<button class="big-play" data-act="speak" data-arg="${esc(w.nl)}" aria-label="Ouvir outra vez">🔊</button>
+    <div class="prompt-actions"><button class="soft" data-act="speakSlow" data-arg="${esc(w.nl)}">🐢 Mais devagar</button></div>
+    <p class="hint">${q.answered ? `<span lang="nl"><b>${nlHtml(w.nl)}</b></span>` : 'O que ouviste?'}</p>`;
+  else if (q.mode === 'A') prompt = `<div class="prompt-word" lang="nl">${nlHtml(w.nl)}</div><div class="prompt-actions">${speakBtns(w.nl)}</div><p class="hint">O que significa?</p>`;
+  else prompt = `${w.img ? `<div class="prompt-img">${imgHtml(w.img)}</div>` : ''}<div class="prompt-word">${esc(w.pt)}</div>
+    <p class="hint">${q.audioOnly ? 'Qual destes sons é?' : 'Como se diz em neerlandês?'}</p>`;
+
+  let body = '';
+  if (q.mode === 'C') {
+    const art = artOf(w);
+    body = `<div class="choices articles">${q.options.map((o, idx) => {
+      const st = q.answered ? (o === art ? ' correct' : q.picked === idx ? ' wrong' : ' done') : '';
+      return `<button class="choice art-choice art-${o}${st}" data-act="choose" data-arg="${idx}" ${q.answered ? 'disabled' : ''}>
+        <span class="key" aria-hidden="true">${idx + 1}</span>${o}</button>`;
+    }).join('')}</div>`;
+  } else if (q.typing) {
+    const cls = q.answered ? (q.correct ? 'correct' : 'wrong') : '';
+    body = `<div class="typing">
+      <input id="typed" class="${cls}" lang="nl" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
+        placeholder="Escreve em neerlandês" value="${q.answered ? esc(q.picked) : ''}" ${q.answered ? 'readonly' : ''}>
+      ${q.answered ? '' : '<button class="primary" data-act="check">Verificar</button>'}</div>
+      ${q.hint ? hintHtml(q) : ''}
+      ${q.answered ? '' : `<div class="hint-row"><button class="soft" data-act="hint">💡 Pista</button>${state.hints ? `<small>${state.hints} pista${state.hints > 1 ? 's' : ''} nesta ronda</small>` : ''}</div>`}`;
+  } else {
+    const state_ = (o, idx) => q.answered ? (o === w ? ' correct' : q.picked === idx ? ' wrong' : ' done') : '';
+    if (q.mode === 'B' && q.audioOnly) {
+      // Opções só com som: um botão para ouvir, outro para responder; o texto só aparece depois
+      body = `<div class="choices">${q.options.map((o, idx) => `
+        <div class="choice audio${state_(o, idx)}">
+          <span class="key" aria-hidden="true">${idx + 1}</span>
+          <button class="play" data-act="speak" data-arg="${esc(o.nl)}" aria-label="Ouvir opção ${idx + 1}">🔊</button>
+          ${q.answered ? `<span class="cap" lang="nl">${nlHtml(o.nl)}</span>`
+            : `<button class="pick" data-act="choose" data-arg="${idx}">Escolher</button>`}
+        </div>`).join('')}</div>`;
+    } else {
+      const withImg = q.mode === 'A' && w.topic.img;
+      body = `<div class="choices">${q.options.map((o, idx) => {
+        // Português sempre com a imagem por cima; neerlandês só texto (a imagem dava a resposta)
+        const content = q.mode === 'B' ? `<span lang="nl">${nlHtml(o.nl)}</span>`
+          : imgHtml(o.img) + `<span class="${o.img ? 'cap' : ''}">${esc(o.pt)}</span>`;
+        return `<button class="choice${withImg ? ' img' : ''}${state_(o, idx)}" data-act="choose" data-arg="${idx}" ${q.answered ? 'disabled' : ''}>
+          <span class="key" aria-hidden="true">${idx + 1}</span>${content}</button>`;
+      }).join('')}</div>`;
+    }
+  }
+
+  let fb = '';
+  if (q.answered) {
+    const last = state.i === n - 1;
+    const mustCopy = q.typing && !q.correct && !q.copied;
+    const copyBlock = q.typing && !q.correct ? `<div class="copy-block">
+        <div class="compare"><span class="old">${esc(q.picked)}</span><span class="arrow">→</span><span class="new" lang="nl">${nlHtml(q.w.nl)}</span></div>
+        ${q.copied ? '<div class="copied">✓ Copiado</div>' : `<input class="copy-input" lang="nl" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Escreve a resposta certa">`}
+      </div>` : '';
+    fb = `<div class="feedback ${q.correct ? 'ok' : 'bad'}">
+      <div class="msg"><b>${q.correct ? `Certo! +1 ${iconOf(skillOf(q))}` : 'Não é bem isso.'}</b>
+        <span class="pair"><span lang="nl">${nlHtml(q.mode === 'C' ? fullNl(w) : w.nl)}</span> = ${esc(w.pt)}</span>
+        ${q.note ? `<div>${q.note}</div>` : ''}</div>
+      <button class="iconbtn" data-act="speak" data-arg="${esc(w.nl)}" aria-label="Ouvir">🔊</button>
+      <button id="nextBtn" class="primary ${q.correct ? '' : 'orange'}" data-act="next" ${mustCopy ? 'disabled' : ''}>${last ? 'Ver resultado' : 'Seguinte'}</button>
+      ${copyBlock}
+    </div>`;
+  }
+
+  return `
+    <div class="topbar">
+      <button class="iconbtn" data-act="quit" aria-label="Terminar a ronda">✕</button>
+      ${n === Infinity ? `<span class="count left">${state.i + 1}.ª pergunta</span><span class="spacer"></span>`
+        : `<div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${state.i + (q.answered ? 1 : 0)}">
+            <div style="width:${100 * (state.i + (q.answered ? 1 : 0)) / n}%"></div></div><span class="count">${state.i + 1}/${n}</span>`}
+      ${state.topicId !== 'mix' ? `<span class="count keybadge" id="keybadge">${KEY} ${keysOf(curTopic())}</span>` : ''}
+    </div>
+    ${inGroup() ? (() => { const t = curTopic(), gi = state.scope, s = streakOf(t, gi), b = bestOf(t, gi);
+      return `<div class="streak"><span class="flame ${s > 0 && s >= b ? 'glow' : ''}">🔥</span> Sequência ${s}${isKeyed(t, gi) ? `, melhor ${b}` : `/${STREAK_GOAL}`} em ${esc(curGroup().name)}</div>`; })() : ''}
+    <div class="prompt">${prompt}</div>
+    ${body}
+    ${fb}`;
+}
+
+function renderResult() {
+  // Se saiu a meio, a pergunta atual sem resposta não conta
+  const qs = state.questions.filter(q => q.answered);
+  if (!qs.length) { state.screen = 'group'; return renderGroup(); }
+  const right = qs.filter(q => q.correct).length;
+  const pct = Math.round(100 * right / qs.length);
+  // Palavras únicas falhadas (a mesma palavra pode ter aparecido várias vezes)
+  const wrong = [...new Set(qs.filter(q => !q.correct).map(q => q.w))];
+  const msg = pct === 100 ? 'Perfeito! Goed gedaan!' : pct >= 80 ? 'Muito bem!' : pct >= 50 ? 'Vais no bom caminho.' : 'Vale a pena repetir este.';
+  const t = curTopic(), r = state.round;
+  const g = curGroup();
+  const streakLine = g ? `<p>Sequência em ${esc(g.name)}: 🔥 ${streakOf(t, state.scope)}${isKeyed(t, state.scope) ? `, melhor ${bestOf(t, state.scope)}` : `/${STREAK_GOAL}`}</p>` : '';
+  return `
+    <div class="topbar"><button class="iconbtn" data-act="home" aria-label="Menu inicial">←</button></div>
+    <div class="result">
+      <div class="score">${right}/${qs.length}</div>
+      <p>${msg} (${pct}%)</p>
+      <p class="gain">${Object.entries(state.gainedBy).map(([k, n]) => `+${n} ${iconOf(k)}`).join(', ') || '+0'}${state.hints ? `, ${state.hints} pista${state.hints > 1 ? 's' : ''}` : ''}</p>
+      ${streakLine}
+      ${r.keyEarned ? `<div class="levelup">${KEY} Ganhaste uma chave! Usa-a no tópico para abrir um grupo novo.</div>${confetti()}` : ''}
+      ${t.id === 'mix' ? '' : `<div class="result-xp">${progressBar(t)}</div>`}
+      <div class="actions">
+        ${wrong.length ? `<button class="primary orange" data-act="retry">Repetir os erros (${wrong.length})</button>` : ''}
+        <button class="primary" data-act="again">Nova ronda</button>
+        <button class="soft" data-act="backToGroup">Voltar</button>
+      </div>
+    </div>
+    ${wrong.length ? `<div class="mistakes"><h2 class="section-title">Palavras para rever</h2>
+      <div class="table-wrap"><table class="wordlist"><tbody>${wrong.map(w => wordRow(w)).join('')}</tbody></table></div></div>` : ''}`;
+}
+
+function render() {
+  const s = state.screen;
+  document.body.classList.toggle('has-panel', s === 'quiz' && state.questions[state.i]?.answered);
+  $app.innerHTML = s === 'home' ? renderHome() : s === 'settings' ? renderSettings() : s === 'setup' ? renderSetup()
+    : s === 'group' ? renderGroup() : s === 'intro' ? renderIntro() : s === 'quiz' ? renderQuiz() : renderResult();
+  if (s === 'quiz') {
+    const q = state.questions[state.i];
+    if (!q.answered && q.typing) document.getElementById('typed').focus();
+    if (q.answered && q.typing && !q.correct && !q.copied) document.querySelector('.copy-input')?.focus({ preventScroll: true });
+    else if (q.answered) document.getElementById('nextBtn')?.focus({ preventScroll: true });
+  }
+}
+
+// ============ AÇÕES ============
+// No A a palavra ouve-se logo que aparece (com ou sem texto); tem de ser dentro do clique por causa do iPhone
+const speakIfListening = () => {
+  const q = state.questions[state.i];
+  if (state.screen === 'quiz' && q.mode === 'A' && !q.answered) speak(q.w.nl);
+};
+
+const actions = {
+  // O misturado não tem grupos: abre logo no ecrã de treino
+  openTopic(id) { state.topicId = id; state.scope = 'topic'; state.showWords = false; state.screen = id === 'mix' ? 'group' : 'setup'; render(); window.scrollTo(0, 0); },
+  openScope(v) { state.scope = v === 'topic' ? 'topic' : Number(v); state.screen = 'group'; render(); window.scrollTo(0, 0); },
+  home() { state.screen = 'home'; render(); },
+  backToTopic() { state.screen = 'setup'; render(); },
+  backToGroup() { state.screen = 'group'; render(); },
+  // Gastar uma chave para abrir um grupo fechado; fica-se no tópico a ver o grupo aberto
+  openGroup(gi) {
+    const t = curTopic(); gi = Number(gi);
+    if (keysOf(t) < 1 || isOpen(t, gi)) return;
+    store.set(`keys:${t.id}`, keysOf(t) - 1);
+    store.set(`open:${t.id}:${gi}`, true);
+    sfx('levelup');
+    render();
+  },
+  toggle(key) { settings[key] = !settings[key]; saveSettings(); render(); },
+  settings() { state.screen = 'settings'; render(); },
+  toggleFeature(f) { store.set(f + ':' + state.topicId, !featureOn(state.topicId, f)); render(); },
+  toggleWords() { state.showWords = !state.showWords; render(); },
+  // Apaga pontos, grupos desbloqueados, sequências, modos avançados e palavras difíceis deste tópico
+  resetTopic() {
+    const id = state.topicId, t = topicById(id);
+    if (!confirm(`Repor o progresso de "${t.pt}"? Perdem-se os grupos abertos, as chaves, as sequências e os pontos deste tópico.`)) return;
+    const keys = [...SKILLS.map(([k]) => `hits:${id}:${k}`), 'hard:' + id, 'audio:' + id, 'hardUsed:' + id, 'audioUsed:' + id, 'diff:' + id];
+    if (t.groups) { keys.push(`keys:${id}`); t.groups.forEach((_, gi) => keys.push(`streak:${id}:${gi}`, `best:${id}:${gi}`, `open:${id}:${gi}`, `keyed:${id}:${gi}`, `seen:${id}:${gi}`)); }
+    keys.forEach(k => { try { localStorage.removeItem('woordjes:' + k); } catch (e) {} });
+    render();
+  },
+  speak(text) { speak(text); },
+  speakSlow(text) { speak(text, true); },
+  start(mode) { startQuiz(mode); speakIfListening(); },
+  choose(idx) {
+    const q = state.questions[state.i];
+    if (q.answered) return;
+    idx = Number(idx);
+    const ok = q.mode === 'C' ? q.options[idx] === artOf(q.w) : q.options[idx] === q.w;
+    answer(q, ok, idx);
+  },
+  check() { checkTyped(); },
+  hint() { giveHint(); },
+  beginRound() { beginRound(state.mode, null); speakIfListening(); },
+  next() { next(); speakIfListening(); },
+  // Sair a meio também fecha a ronda (na infinita é a forma normal de terminar)
+  quit() { if (state.questions.some(q => q.answered)) endRound(); else { stopSpeaking(); state.screen = 'group'; render(); } },
+  retry() {
+    const wrong = [...new Set(state.questions.filter(q => q.answered && !q.correct).map(q => q.w))];
+    startQuiz(state.mode, wrong);
+    speakIfListening();
+  },
+  again() { startQuiz(state.mode); speakIfListening(); },
+};
+
+$app.addEventListener('input', e => {
+  if (e.target.classList.contains('intro-input')) checkIntro(e.target);
+  if (e.target.classList.contains('copy-input')) checkCopy(e.target);
+});
+
+$app.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el || el.disabled) return;
+  actions[el.dataset.act]?.(el.dataset.arg, el);
+});
+
+// Teclado no computador: 1-6 para escolher, Enter para verificar / avançar
+document.addEventListener('keydown', e => {
+  if (state.screen !== 'quiz') return;
+  const q = state.questions[state.i];
+  if (e.key === 'Enter') {
+    if (!q.answered && q.typing) { e.preventDefault(); checkTyped(); }
+    else if (q.answered && !document.activeElement?.classList.contains('copy-input') && document.activeElement?.id !== 'nextBtn') { e.preventDefault(); actions.next(); }
+    return;
+  }
+  if (!q.answered && !q.typing && /^[1-6]$/.test(e.key) && q.options[Number(e.key) - 1]) actions.choose(Number(e.key) - 1);
+});
+
+render();
+
+// Ecrã de arranque: desaparece assim que a app está pronta
+const splash = document.getElementById('splash');
+setTimeout(() => { splash.classList.add('hide'); setTimeout(() => splash.remove(), 500); }, 700);
+
+// Funcionar sem internet depois da primeira visita (só na versão instalável)
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
