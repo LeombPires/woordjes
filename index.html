@@ -1090,6 +1090,7 @@ const isKeyed = (t, gi) => store.get(`keyed:${t.id}:${gi}`, false);
 const keysOf = t => store.get(`keys:${t.id}`, 0);
 const seen = (t, gi) => store.get(`seen:${t.id}:${gi}`, false);
 const openCount = t => t.groups.filter((_, gi) => isOpen(t, gi)).length;
+const allGroupsOpen = t => openCount(t) === t.groups.length;
 const keyedCount = t => t.groups.filter((_, gi) => isKeyed(t, gi)).length;
 const topicComplete = t => keyedCount(t) === t.groups.length;
 const unlockedWords = t => t.groups.flatMap((g, gi) => isOpen(t, gi) ? g.words : []);
@@ -1392,11 +1393,16 @@ function renderSetup() {
   const n = openCount(t), words = unlockedWords(t), keys = keysOf(t);
 
   // Azulejos: todo o tópico + um por grupo. Grupos fechados abrem-se com uma chave
+  // "Todo o tópico" só abre quando todos os grupos estiverem abertos
   const tiles = `
-    <button class="gtile" data-act="openScope" data-arg="topic">
-      <span class="g-state">∑</span>
-      <span class="g-name">Todo o tópico</span>
-      <span class="g-info">${words.length} palavras, ${n === 1 ? '1 grupo aberto' : `${n} grupos abertos`}</span></button>
+    ${allGroupsOpen(t)
+      ? `<button class="gtile" data-act="openScope" data-arg="topic">
+          <span class="g-state">∑</span>
+          <span class="g-name">Todo o tópico</span>
+          <span class="g-info">${words.length} palavras, todos os grupos</span></button>`
+      : `<div class="gtile locked"><span class="g-state">🔒</span>
+          <span class="g-name">Todo o tópico</span>
+          <span class="g-info">Abre quando os ${t.groups.length} grupos estiverem abertos (${n} de ${t.groups.length})</span></div>`}
     ${t.groups.map((g, gi) => {
       const open = isOpen(t, gi), keyed = isKeyed(t, gi), s = streakOf(t, gi), b = bestOf(t, gi);
       if (!open) return keys
@@ -1653,7 +1659,10 @@ const speakIfListening = () => {
 const actions = {
   // O misturado não tem grupos: abre logo no ecrã de treino
   openTopic(id) { state.topicId = id; state.scope = 'topic'; state.showWords = false; state.screen = id === 'mix' ? 'group' : 'setup'; render(); window.scrollTo(0, 0); },
-  openScope(v) { state.scope = v === 'topic' ? 'topic' : Number(v); state.screen = 'group'; render(); window.scrollTo(0, 0); },
+  openScope(v) {
+    if (v === 'topic' && !allGroupsOpen(curTopic())) return;
+    state.scope = v === 'topic' ? 'topic' : Number(v); state.screen = 'group'; render(); window.scrollTo(0, 0);
+  },
   home() { state.screen = 'home'; render(); },
   backToTopic() { state.screen = 'setup'; render(); },
   backToGroup() { state.screen = 'group'; render(); },
