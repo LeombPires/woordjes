@@ -1095,6 +1095,10 @@ const lockedCount = t => t.groups.length - openCount(t);
 const keyedCount = t => t.groups.filter((_, gi) => isKeyed(t, gi)).length;
 const topicComplete = t => keyedCount(t) === t.groups.length;
 const unlockedWords = t => t.groups.flatMap((g, gi) => isOpen(t, gi) ? g.words : []);
+// Nunca guardar mais chaves do que grupos fechados por abrir (com tudo aberto fica a zero).
+// Corre ao abrir a app, porque havia quem tivesse ficado com uma chave a mais de antes desta regra, e depois de abrir um grupo
+const trimKeys = t => { if (keysOf(t) > lockedCount(t)) store.set(`keys:${t.id}`, lockedCount(t)); };
+TOPICS.forEach(trimKeys);
 
 // Modos avançados (hard = escrever, no A em português e no B em neerlandês; audio = sem texto) desbloqueiam-se grupo a grupo pela melhor sequência.
 // O interruptor é por tópico e aplica-se só às palavras dos grupos que já os desbloquearam.
@@ -1700,6 +1704,7 @@ const actions = {
     if (keysOf(t) < 1 || isOpen(t, gi)) return;
     store.set(`keys:${t.id}`, keysOf(t) - 1);
     store.set(`open:${t.id}:${gi}`, true);
+    trimKeys(t);
     sfx('levelup');
     render();
   },
