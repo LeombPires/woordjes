@@ -1096,7 +1096,7 @@ const keyedCount = t => t.groups.filter((_, gi) => isKeyed(t, gi)).length;
 const topicComplete = t => keyedCount(t) === t.groups.length;
 const unlockedWords = t => t.groups.flatMap((g, gi) => isOpen(t, gi) ? g.words : []);
 
-// Modos avançados (hard = escrever no B; audio = sem texto) desbloqueiam-se grupo a grupo pela melhor sequência.
+// Modos avançados (hard = escrever, no A em português e no B em neerlandês; audio = sem texto) desbloqueiam-se grupo a grupo pela melhor sequência.
 // O interruptor é por tópico e aplica-se só às palavras dos grupos que já os desbloquearam.
 const FEATURES = ['hard', 'audio'];
 const wordHas = (w, f) => bestOf(w.topic, w.gi) >= FEATURE_GOAL[f];
@@ -1154,7 +1154,7 @@ function pickWord() {
 }
 
 // Até 6 opções, as erradas totalmente ao calhas dentro do âmbito (sem pistas)
-// No B com escrita e sem texto ligados ao mesmo tempo, ganha a escrita
+// Com escrita e sem texto ligados ao mesmo tempo, ganha a escrita (no A e no B)
 function makeQuestion(w, mode) {
   state.prev = w;
   if (mode === 'AB') mode = Math.random() < 0.5 ? 'A' : 'B';
@@ -1166,7 +1166,8 @@ function makeQuestion(w, mode) {
     sounds.add(spoken(o.nl)); pts.add(o.pt); pool.push(o);
   }
   const id = state.topicId;
-  const typing = mode === 'B' && featureOn(id, 'hard') && wordHas(w, 'hard');
+  // ✍️ nos dois sentidos: no A escreve-se o português, no B o neerlandês
+  const typing = featureOn(id, 'hard') && wordHas(w, 'hard');
   const audioOnly = !typing && featureOn(id, 'audio') && wordHas(w, 'audio');
   if (typing) store.set('hardUsed:' + id, true);
   if (audioOnly) store.set('audioUsed:' + id, true);
@@ -1252,14 +1253,25 @@ function answer(q, ok, picked, note) {
   else speak(q.mode === 'C' ? fullNl(q.w) : q.w.nl);
 }
 
+// ---- Escrever em português (A com ✍️) ----
+// Aceita a tradução toda ou qualquer alternativa separada por " / ", sem o texto entre parênteses (é só uma pista),
+// sem artigo à frente e sem ligar a hífenes, espaços ou acentos: "primo", "sobrinho", "tempo", "segunda feira"
+const writesPt = q => q.mode === 'A';
+const ptClean = pt => pt.replace(/\s*\(.*?\)\s*/g, ' ').trim();
+const ptMain = pt => ptClean(pt).split(' / ')[0];
+const ptKey = s => norm(s).replace(/^(o|a|os|as|um|uma) /, '').replace(/ /g, '');
+const ptOk = (typed, pt) => [pt, ptClean(pt), ...ptClean(pt).split(' / ')].some(x => ptKey(x) === ptKey(typed));
+// A palavra das pistas: o neerlandês sem artigo, ou a primeira alternativa em português
+const hintWord = q => writesPt(q) ? ptMain(q.w.pt) : stripArt(spoken(q.w.nl));
+
 // Pista: primeiro os espaços, depois uma letra ao calhas de cada vez. O acerto com pista não conta para a sequência
 function giveHint() {
   const q = state.questions[state.i];
   if (q.answered) return;
-  const word = stripArt(spoken(q.w.nl));
+  const word = hintWord(q);
   if (!q.hint) q.hint = { shown: new Set() };
   else {
-    const left = [...word].map((ch, i) => i).filter(i => word[i] !== ' ' && !q.hint.shown.has(i));
+    const left = [...word].map((ch, i) => i).filter(i => word[i] !== ' ' && word[i] !== '-' && !q.hint.shown.has(i));
     if (!left.length) return;
     q.hint.shown.add(left[Math.floor(Math.random() * left.length)]);
   }
@@ -1270,15 +1282,20 @@ function giveHint() {
   if (input) { input.value = typed; input.focus(); }
 }
 function hintHtml(q) {
-  const full = spoken(q.w.nl), art = articleOf(full), word = stripArt(full);
-  const letters = [...word].map((ch, i) => ch === ' ' ? ' ' : q.hint.shown.has(i) ? ch : '_').join(' ');
+  const word = hintWord(q);
+  // Espaços e hífenes aparecem logo; no neerlandês o artigo também (com a cor do de/het)
+  const letters = [...word].map((ch, i) => ch === ' ' || ch === '-' ? ch : q.hint.shown.has(i) ? ch : '_').join(' ');
+  if (writesPt(q)) return `<div class="hint-box">${esc(letters)}</div>`;
+  const art = articleOf(spoken(q.w.nl));
   return `<div class="hint-box"><span class="art art-${art || ''}">${art || ''}</span> ${esc(letters)}</div>`;
 }
 
 // Errou a escrever: tem de copiar a resposta certa antes de avançar; a tentativa errada fica visível para comparar
 function checkCopy(input) {
   const q = state.questions[state.i];
-  if (norm(input.value) === norm(spoken(q.w.nl)) || (stripArt(norm(input.value)) === stripArt(norm(spoken(q.w.nl))))) {
+  const ok = writesPt(q) ? ptOk(input.value, q.w.pt)
+    : norm(input.value) === norm(spoken(q.w.nl)) || stripArt(norm(input.value)) === stripArt(norm(spoken(q.w.nl)));
+  if (ok) {
     q.copied = true;
     sfx('ok');
     render();
@@ -1290,6 +1307,7 @@ function checkTyped() {
   const input = document.getElementById('typed');
   const raw = input.value;
   if (!raw.trim()) { input.focus(); return; }
+  if (writesPt(q)) { answer(q, ptOk(raw, q.w.pt), raw, ''); return; }
   const a = norm(raw), b = norm(spoken(q.w.nl));
   let ok = a === b, note = '';
   // Sem artigo também conta, mas avisa se o artigo escrito estiver errado
@@ -1386,7 +1404,7 @@ function renderSettings() {
     ${voiceNote ? `<div class="note">${voiceNote}</div>` : ''}
     <p class="legend">Artigos: <span class="art art-de">de</span> aparece sempre a azul e <span class="art art-het">het</span> a laranja.</p>
     <div class="note">Como funciona: cada tópico está dividido em grupos pequenos e começa com o primeiro aberto. Consegue ${STREAK_GOAL} acertos seguidos num grupo e ganhas uma chave ${KEY}, que abre outro grupo à tua escolha nesse tópico. Cada grupo dá uma chave uma só vez e guarda a tua melhor sequência: aos ${FEATURE_GOAL.audio} desbloqueia o modo sem texto 🎧, aos ${FEATURE_GOAL.art} o exercício de/het e aos ${FEATURE_GOAL.hard} o modo escrever ✍️, para as palavras desse grupo.</div>
-    <div class="note">🔒 quer dizer que essa opção ainda não foi desbloqueada nesse grupo. 🎧 Sem texto: a pergunta em neerlandês é só som e as opções em neerlandês são sons. ✍️ Escrever: português → neerlandês sem opções, com pistas letra a letra. Em "Todo o tópico" e no "Tudo misturado", cada opção aplica-se só às palavras dos grupos que já a desbloquearam.</div>
+    <div class="note">🔒 quer dizer que essa opção ainda não foi desbloqueada nesse grupo. 🎧 Sem texto: a pergunta em neerlandês é só som e as opções em neerlandês são sons. ✍️ Escrever: sem opções, com pistas letra a letra, nos dois sentidos. Se a pergunta está em português escreves em neerlandês; se está em neerlandês escreves em português. Em "Todo o tópico" e no "Tudo misturado", cada opção aplica-se só às palavras dos grupos que já a desbloquearam.</div>
     <div class="note">Pontos por competência: ⭐ respostas com opções, ${ART} artigos (de/het), 🔊 respostas só com som, ✍️ respostas escritas.</div>`;
 }
 
@@ -1538,7 +1556,7 @@ function renderQuiz() {
   else if (q.mode === 'A' && q.audioOnly) prompt = `<button class="big-play" data-act="speak" data-arg="${esc(w.nl)}" aria-label="Ouvir outra vez">🔊</button>
     <div class="prompt-actions"><button class="soft" data-act="speakSlow" data-arg="${esc(w.nl)}">🐢 Mais devagar</button></div>
     <p class="hint">${q.answered ? `<span lang="nl"><b>${nlHtml(w.nl)}</b></span>` : 'O que ouviste?'}</p>`;
-  else if (q.mode === 'A') prompt = `<div class="prompt-word" lang="nl">${nlHtml(w.nl)}</div><div class="prompt-actions">${speakBtns(w.nl)}</div><p class="hint">O que significa?</p>`;
+  else if (q.mode === 'A') prompt = `<div class="prompt-word" lang="nl">${nlHtml(w.nl)}</div><div class="prompt-actions">${speakBtns(w.nl)}</div><p class="hint">${q.typing ? 'O que significa? Escreve em português.' : 'O que significa?'}</p>`;
   else prompt = `${w.img ? `<div class="prompt-img">${imgHtml(w.img)}</div>` : ''}<div class="prompt-word">${esc(w.pt)}</div>
     <p class="hint">${q.audioOnly ? 'Qual destes sons é?' : 'Como se diz em neerlandês?'}</p>`;
 
@@ -1553,8 +1571,8 @@ function renderQuiz() {
   } else if (q.typing) {
     const cls = q.answered ? (q.correct ? 'correct' : 'wrong') : '';
     body = `<div class="typing">
-      <input id="typed" class="${cls}" lang="nl" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
-        placeholder="Escreve em neerlandês" value="${q.answered ? esc(q.picked) : ''}" ${q.answered ? 'readonly' : ''}>
+      <input id="typed" class="${cls}" lang="${writesPt(q) ? 'pt' : 'nl'}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
+        placeholder="${writesPt(q) ? 'Escreve em português' : 'Escreve em neerlandês'}" value="${q.answered ? esc(q.picked) : ''}" ${q.answered ? 'readonly' : ''}>
       ${q.answered ? '' : '<button class="primary" data-act="check">Verificar</button>'}</div>
       ${q.hint ? hintHtml(q) : ''}
       ${q.answered ? '' : `<div class="hint-row"><button class="soft" data-act="hint">💡 Pista</button>${state.hints ? `<small>${state.hints} pista${state.hints > 1 ? 's' : ''} nesta ronda</small>` : ''}</div>`}`;
@@ -1586,8 +1604,8 @@ function renderQuiz() {
     const last = state.i === n - 1;
     const mustCopy = q.typing && !q.correct && !q.copied;
     const copyBlock = q.typing && !q.correct ? `<div class="copy-block">
-        <div class="compare"><span class="old">${esc(q.picked)}</span><span class="arrow">→</span><span class="new" lang="nl">${nlHtml(q.w.nl)}</span></div>
-        ${q.copied ? '<div class="copied">✓ Copiado</div>' : `<input class="copy-input" lang="nl" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Escreve a resposta certa">`}
+        <div class="compare"><span class="old">${esc(q.picked)}</span><span class="arrow">→</span>${writesPt(q) ? `<span class="new" lang="pt">${esc(q.w.pt)}</span>` : `<span class="new" lang="nl">${nlHtml(q.w.nl)}</span>`}</div>
+        ${q.copied ? '<div class="copied">✓ Copiado</div>' : `<input class="copy-input" lang="${writesPt(q) ? 'pt' : 'nl'}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Escreve a resposta certa">`}
       </div>` : '';
     fb = `<div class="feedback ${q.correct ? 'ok' : 'bad'}">
       <div class="msg"><b>${q.correct ? `Certo! +1 ${iconOf(skillOf(q))}` : 'Não é bem isso.'}</b>
